@@ -17,7 +17,7 @@ class Platform(Sprite):
                 break
 
         self.top += self.rect.top
-        self.jump_force = 100
+        self.jump_force = 130
 
     @property
     def jump_force(self):

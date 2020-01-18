@@ -4,7 +4,6 @@ import pygame
 from Sprite import Sprite
 
 
-
 class Direction(Enum):
     LEFT = -1
     STALL = 0
@@ -20,9 +19,6 @@ class Player(Sprite):
         self.horizontal_force = 60
         self.horizontal_direction = Direction.STALL
 
-        #  self.mask = None
-        #  TODO
-
         self.weight = 10
 
         self.gravitation = 9.8
@@ -34,6 +30,18 @@ class Player(Sprite):
         self.world_boundings = world_boundings
 
         super().__init__(pos, self.images[self.image_code])
+
+        self.left_mask = pygame.mask.Mask(self.rect.size)
+        for i in range(14, 45):
+            for j in range(self.rect.height):
+                self.left_mask.set_at((i, j))
+
+        self.right_mask = pygame.mask.Mask(self.rect.size)
+        for i in range(31):
+            for j in range(self.rect.height):
+                self.right_mask.set_at((i, j))
+
+        self.mask = self.right_mask
 
     def load_images(self, images_dir):
         self.images = dict()
@@ -53,8 +61,10 @@ class Player(Sprite):
     def __update_image(self):
         if self.horizontal_direction == Direction.LEFT:
             self.image_code = "left"
+            self.mask = self.left_mask
         elif self.horizontal_direction == Direction.RIGHT:
             self.image_code = "right"
+            self.mask = self.right_mask
 
         if self.bounce_step == 15:
             self.bounce_step = -1
@@ -93,6 +103,7 @@ class Player(Sprite):
             self.vertical_speed = 0
 
     def update(self, platforms, fps):
+        print(self.mask)
         self.__update_image()
 
         self.__update_vertical_speed(fps)
