@@ -1,7 +1,7 @@
 import os
 from enum import Enum
 import pygame
-from Sprite import Sprite
+from sprite import Sprite
 
 
 class Direction(Enum):
@@ -16,12 +16,12 @@ class Player(Sprite):
         self.vertical_speed = 0
 
         self.horizontal_speed = 0
-        self.horizontal_force = 60
+        self.horizontal_force = 400
         self.horizontal_direction = Direction.STALL
 
-        self.weight = 10
+        self.weight = 1
 
-        self.gravitation = 9.8
+        self.gravitation = 70
         self.acceleration = 0
         self.image_code = "right"
 
@@ -33,15 +33,23 @@ class Player(Sprite):
 
         self.left_mask = pygame.mask.Mask(self.rect.size)
         for i in range(14, 45):
-            for j in range(self.rect.height):
+            for j in range(35, self.rect.height):
                 self.left_mask.set_at((i, j))
 
         self.right_mask = pygame.mask.Mask(self.rect.size)
         for i in range(31):
-            for j in range(self.rect.height):
+            for j in range(35, self.rect.height):
                 self.right_mask.set_at((i, j))
 
         self.mask = self.right_mask
+
+    @property
+    def global_coordinate(self):
+        return self._global_coordinate
+
+    @global_coordinate.setter
+    def global_coordinate(self, val):
+        self._global_coordinate = val
 
     def load_images(self, images_dir):
         self.images = dict()
@@ -66,7 +74,7 @@ class Player(Sprite):
             self.image_code = "right"
             self.mask = self.right_mask
 
-        if self.bounce_step == 15:
+        if self.bounce_step == 20:
             self.bounce_step = -1
 
         if self.bounce_step != -1:
@@ -103,24 +111,23 @@ class Player(Sprite):
             self.vertical_speed = 0
 
     def update(self, platforms, fps):
-        print(self.mask)
         self.__update_image()
 
         self.__update_vertical_speed(fps)
         self.__update_horizontal_speed()
 
-        self.rect.move_ip((self.horizontal_speed, self.vertical_speed))
+        self.rect.move_ip((self.horizontal_speed / fps,
+                           self.vertical_speed / fps))
 
         self.__check_boundings()
 
         if self.vertical_speed <= 0:
             return
 
-        collision = None
-        for platform in platforms:
-            if pygame.sprite.collide_mask(self, platform) is not None:
-                collision = platform
-                break
+        collision = \
+            pygame.sprite.spritecollideany(self,
+                                           platforms,
+                                           collided=pygame.sprite.collide_mask)
 
         if collision is None:
             return
