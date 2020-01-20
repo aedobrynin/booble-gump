@@ -8,11 +8,13 @@ class PlatformsHandler(pygame.sprite.Group):
         super().__init__()
         self.world_boundings = world_boundings
 
+        self.add(Platform((300, 520), "./data/images/platforms/solid.png"))
+
         while len(self) != 20:
             x = random.randrange(self.world_boundings[0] + 15,
                                  self.world_boundings[2] - 15)
-            y = random.randrange(self.world_boundings[1] + 15,
-                                 self.world_boundings[3] - 15)
+            y = random.randrange(self.world_boundings[1],
+                                 self.world_boundings[3])
 
             platform = Platform((x, y), "./data/images/platforms/solid.png")
             collision = \
@@ -20,14 +22,15 @@ class PlatformsHandler(pygame.sprite.Group):
                                                self,
                                                collided=pygame.sprite.collide_mask)
             if collision is None:
-                self.add(platform)
+                 self.add(platform)
 
-    def move(self, value):
-        for platform in self.sprites():
-            platform.rect.move_ip((0, value))
-            if platform.pos[1] > self.world_boundings[3]:
-                self.remove(platform)
-                print("removed")
+    def update(self, scroll_value, fps):
+        if scroll_value:
+            for platform in self.sprites():
+                platform.rect.move_ip((0, scroll_value))
+                if platform.pos[1] > self.world_boundings[3]:
+                    self.remove(platform)
+
         while len(self) != 20:
             x = random.randrange(self.world_boundings[0],
                                  self.world_boundings[2])
@@ -41,4 +44,3 @@ class PlatformsHandler(pygame.sprite.Group):
                                                collided=pygame.sprite.collide_mask)
             if collision is None:
                 self.add(platform)
-                print("added")

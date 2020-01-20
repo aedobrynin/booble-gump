@@ -4,8 +4,9 @@ from player import Player, Direction
 from platforms_handler import PlatformsHandler
 
 
-WINDOW_SIZE = WINDOW_WIDTH, WINDOW_HEIGHT = 450, 800
+WINDOW_SIZE = WINDOW_WIDTH, WINDOW_HEIGHT = 400, 600
 WORLD_BOUNDINGS = (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+LEVEL_LINE = WINDOW_HEIGHT // 2
 FPS = 60
 
 LEFT_KEY = pygame.K_LEFT
@@ -22,12 +23,13 @@ def main():
 
     platforms_handler = PlatformsHandler(WORLD_BOUNDINGS)
 
-    player = Player((300, 650),
+    player = Player((300, 500),
                     os.path.join(IMAGES_DIR, "player", "blue"),
                     WORLD_BOUNDINGS)
 
     clock = pygame.time.Clock()
     running = True
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -39,9 +41,12 @@ def main():
                 elif event.key == RIGHT_KEY:
                     player.horizontal_direction = Direction.RIGHT
 
-            if event.type == pygame.KEYUP and\
-               event.key in (LEFT_KEY, RIGHT_KEY):
-                player.horizontal_direction = Direction.STALL
+            if event.type == pygame.KEYUP:
+                if (event.key == LEFT_KEY and
+                     player.horizontal_direction == Direction.LEFT) or\
+                   (event.key == RIGHT_KEY and
+                     player.horizontal_direction == Direction.RIGHT):
+                    player.horizontal_direction = Direction.STALL
 
         screen.fill(pygame.Color("white"))
         platforms_handler.draw(screen)
@@ -49,8 +54,14 @@ def main():
 
         pygame.display.flip()
 
-        platforms_handler.move(1)
         player.update(platforms_handler, FPS)
+
+        scroll_value = 0
+        if player.pos[1] < LEVEL_LINE:
+            scroll_value = abs(player.pos[1] - LEVEL_LINE)
+            player.pos = player.pos[0], LEVEL_LINE
+
+        platforms_handler.update(scroll_value, FPS)
 
         clock.tick(FPS)
 

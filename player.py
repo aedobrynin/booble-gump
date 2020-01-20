@@ -21,7 +21,7 @@ class Player(Sprite):
 
         self.weight = 1
 
-        self.gravitation = 70
+        self.gravitation = 50
         self.acceleration = 0
         self.image_code = "right"
 
@@ -33,23 +33,15 @@ class Player(Sprite):
 
         self.left_mask = pygame.mask.Mask(self.rect.size)
         for i in range(14, 45):
-            for j in range(35, self.rect.height):
+            for j in range(30, self.rect.height):
                 self.left_mask.set_at((i, j))
 
         self.right_mask = pygame.mask.Mask(self.rect.size)
         for i in range(31):
-            for j in range(35, self.rect.height):
+            for j in range(30, self.rect.height):
                 self.right_mask.set_at((i, j))
 
         self.mask = self.right_mask
-
-    @property
-    def global_coordinate(self):
-        return self._global_coordinate
-
-    @global_coordinate.setter
-    def global_coordinate(self, val):
-        self._global_coordinate = val
 
     def load_images(self, images_dir):
         self.images = dict()
@@ -116,13 +108,13 @@ class Player(Sprite):
         self.__update_vertical_speed(fps)
         self.__update_horizontal_speed()
 
+        self.__check_boundings()
+
         self.rect.move_ip((self.horizontal_speed / fps,
                            self.vertical_speed / fps))
 
-        self.__check_boundings()
-
         if self.vertical_speed <= 0:
-            return
+            return False
 
         collision = \
             pygame.sprite.spritecollideany(self,
@@ -130,9 +122,10 @@ class Player(Sprite):
                                            collided=pygame.sprite.collide_mask)
 
         if collision is None:
-            return
+            return False
 
         self.acceleration = 0
         self.vertical_speed = -collision.jump_force / self.weight
         self.rect.bottom = collision.top
         self.bounce()
+        return True

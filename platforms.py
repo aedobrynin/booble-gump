@@ -16,7 +16,7 @@ class Platform(Sprite):
             if self.top is not None:
                 break
 
-        self.jump_force = 700
+        self.jump_force = 400
 
     @property
     def top(self):
