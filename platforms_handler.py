@@ -22,7 +22,7 @@ class PlatformsHandler(pygame.sprite.Group):
                                                self,
                                                collided=pygame.sprite.collide_mask)
             if collision is None:
-                 self.add(platform)
+                self.add(platform)
 
     def update(self, scroll_value, fps):
         if scroll_value:

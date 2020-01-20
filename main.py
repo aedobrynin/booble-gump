@@ -43,9 +43,9 @@ def main():
 
             if event.type == pygame.KEYUP:
                 if (event.key == LEFT_KEY and
-                     player.horizontal_direction == Direction.LEFT) or\
+                    player.horizontal_direction == Direction.LEFT) or\
                    (event.key == RIGHT_KEY and
-                     player.horizontal_direction == Direction.RIGHT):
+                        player.horizontal_direction == Direction.RIGHT):
                     player.horizontal_direction = Direction.STALL
 
         screen.fill(pygame.Color("white"))
