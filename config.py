@@ -1,0 +1,38 @@
+import os
+import pygame
+from enum import Enum
+
+
+PACK_NAME = "blue"
+DATA_DIR = "./data"
+PACK_DIR = os.path.join(DATA_DIR, PACK_NAME)
+PLATFORMS_DIR = os.path.join(PACK_DIR, "platforms")
+PLAYER_DIR = os.path.join(PACK_DIR, "player")
+SOUNDS_DIR = os.path.join(PACK_DIR , "sounds")
+BACKGROUND = pygame.image.load(os.path.join(PACK_DIR, "background.png"))
+
+FPS = 60
+
+LEFT_KEY = pygame.K_LEFT
+RIGHT_KEY = pygame.K_RIGHT
+
+WINDOW_SIZE = WINDOW_WIDTH, WINDOW_HEIGHT = 320, 512
+WORLD_BOUNDINGS = (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+LEVEL_LINE = WINDOW_HEIGHT // 2
+
+GRAVITATION = 1500
+PLAYER_WEIGHT = 1
+PLAYER_HORIZONTAL_FORCE = 400
+PLAYER_BOUNCE_ANIMATION_STEPS = 20
+PLATFORMS_JUMP_FORCE = 400
+PLATFORM_MOVE_SPEED = 150
+MAX_PLAYER_SPEED = PLATFORMS_JUMP_FORCE / PLAYER_WEIGHT
+MAX_PLAYER_JUMP_HEIGHT = int(MAX_PLAYER_SPEED ** 2 / (2 * GRAVITATION))
+
+
+class Direction(Enum):
+    STALL = 0
+    LEFT = 1
+    RIGHT = 2
+    UP = 3
+    DOWN = 4

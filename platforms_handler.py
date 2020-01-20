@@ -1,42 +1,42 @@
 import pygame
 import random
-from platforms import Platform
+from platforms import *
 
 
 class PlatformsHandler(pygame.sprite.Group):
-    def __init__(self, world_boundings):
+    def __init__(self, world_boundings, images_dir):
         super().__init__()
         self.world_boundings = world_boundings
 
-        self.add(Platform((300, 520), "./data/images/platforms/solid.png"))
+        self.platforms_generator = RandomPlatformGenerator(world_boundings, images_dir)
 
-        while len(self) != 20:
-            x = random.randrange(self.world_boundings[0] + 15,
-                                 self.world_boundings[2] - 15)
-            y = random.randrange(self.world_boundings[1],
-                                 self.world_boundings[3])
+        self.last_height = world_boundings[3]
+        while self.last_height > -MAX_PLAYER_JUMP_HEIGHT:
+            pos = (random.randrange(world_boundings[0], world_boundings[2] - 40),
+                   random.randrange(self.last_height - MAX_PLAYER_JUMP_HEIGHT, self.last_height - 20))
 
-            platform = Platform((x, y), "./data/images/platforms/solid.png")
+            platform = self.platforms_generator.generate(pos)
+
             collision = \
                 pygame.sprite.spritecollideany(platform,
                                                self,
                                                collided=pygame.sprite.collide_mask)
             if collision is None:
                 self.add(platform)
+                self.last_height = pos[1]
 
     def update(self, scroll_value, fps):
         if scroll_value:
             for platform in self.sprites():
-                platform.rect.move_ip((0, scroll_value))
                 if platform.pos[1] > self.world_boundings[3]:
                     self.remove(platform)
+            self.last_height += scroll_value
 
-        while len(self) != 20:
-            x = random.randrange(self.world_boundings[0],
-                                 self.world_boundings[2])
-            y = random.randrange(-self.world_boundings[3] // 4,
-                                 self.world_boundings[0])
-            platform = Platform((x, y), "./data/images/platforms/solid.png")
+        while self.last_height > -MAX_PLAYER_JUMP_HEIGHT:
+            pos = (random.randrange(self.world_boundings[0], self.world_boundings[2] - 40),
+                   random.randrange(self.last_height - MAX_PLAYER_JUMP_HEIGHT, self.last_height - 20))
+
+            platform = self.platforms_generator.generate(pos)
 
             collision = \
                 pygame.sprite.spritecollideany(platform,
@@ -44,3 +44,9 @@ class PlatformsHandler(pygame.sprite.Group):
                                                collided=pygame.sprite.collide_mask)
             if collision is None:
                 self.add(platform)
+                self.last_height = pos[1]
+
+        for platform in self.sprites():
+            platform.rect.move_ip((0, scroll_value))
+
+        super().update(fps)
