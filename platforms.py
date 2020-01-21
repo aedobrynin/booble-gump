@@ -6,8 +6,8 @@ from config import *
 
 
 class BasePlatform(Sprite):
-    def __init__(self, pos, image_path):
-        super().__init__(pos, pygame.image.load(image_path))
+    def __init__(self, pos, image):
+        super().__init__(pos, image)
         self.mask = pygame.mask.from_surface(self.image)
         self.top = 0
         for j in range(self.image.get_height()):
@@ -39,28 +39,25 @@ class BasePlatform(Sprite):
     def jump_force(self, value):
         self._jump_force = value
 
+    def collision_react(self):
+        pass
+
 
 class StaticPlatform(BasePlatform):
-    def __init__(self, pos, image_path):
-        super().__init__(pos, image_path)
+    def __init__(self, pos, image):
+        super().__init__(pos, image)
 
 
 class HorizontalMovingPlatform(BasePlatform):
-    def __init__(self, pos, image_path):
-        super().__init__(pos, image_path)
+    def __init__(self, pos, image):
+        super().__init__(pos, image)
         self.speed = PLATFORM_MOVE_SPEED
 
-        self.left_lim = random.randrange(WORLD_BOUNDINGS[0],
-                                         WORLD_BOUNDINGS[2] // 2 - 50)
-        self.right_lim = random.randrange(WORLD_BOUNDINGS[2] // 2,
-                                          WORLD_BOUNDINGS[2] - 50)
+        self.left_lim = WORLD_BOUNDINGS[0] + 15
+
+        self.right_lim = WORLD_BOUNDINGS[2] - 70
 
         self.direction = random.choice((Direction.LEFT, Direction.RIGHT))
-
-        if self.direction == Direction.LEFT:
-            self.pos = self.left_lim, self.pos[1]
-        else:
-            self.pos = self.right_lim, self.pos[1]
 
     def update(self, fps):
         if self.direction == Direction.LEFT:
@@ -74,19 +71,36 @@ class HorizontalMovingPlatform(BasePlatform):
                 self.direction = Direction.LEFT
                 self.pos = self.right_lim, self.pos[1]
 
+
+class VanishPlatform(BasePlatform):
+    def __init__(self, pos, image):
+        super().__init__(pos, image)
+
+    def collision_react(self):
+        self.kill()
+
+
 PLATFORM_TYPES = ((StaticPlatform, "static"),
-                  (HorizontalMovingPlatform, "moving"), )
-CHOICE_WEIGHTS = (0.8, 0.2)
+                  (HorizontalMovingPlatform, "moving"),
+                  (VanishPlatform, "vanish"))
+CHOICE_WEIGHTS = (0.5, 0.3, 0.2)
 
 
 class RandomPlatformGenerator:
     def __init__(self, world_boundings, images_dir):
         self.world_boundings = world_boundings
-        self.images_dir = images_dir
+        self.load_images(images_dir)
+
+    def load_images(self, images_dir):
+        self.images = dict()
+        for filename in os.listdir(images_dir):
+            class_name = filename.rsplit('.')[0]
+            self.images[class_name] = \
+                pygame.image.load(os.path.join(images_dir, filename))
 
     def generate(self, platform_pos):
-        platform_class, platform_class_name = random.choices(PLATFORM_TYPES,
-                                                             weights=CHOICE_WEIGHTS)[0]
+        platform_class, platform_class_name = \
+            random.choices(PLATFORM_TYPES, weights=CHOICE_WEIGHTS)[0]
 
         if platform_pos is None:
             platform_x = random.randrange(self.world_boundings[0],
@@ -95,6 +109,4 @@ class RandomPlatformGenerator:
                                           self.world_boundings[1])
             platform_pos = (platform_x, platform_y)
 
-        platform_image_path = os.path.join(self.images_dir,
-                                           f"{platform_class_name}.png")
-        return platform_class(platform_pos, platform_image_path)
+        return platform_class(platform_pos, self.images[platform_class_name])

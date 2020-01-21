@@ -16,14 +16,11 @@ def main():
     player = Player((150, 500),
                     PLAYER_DIR,
                     WORLD_BOUNDINGS)
-    player.vertical_speed = -300
+    player.vertical_speed = -800
 
     clock = pygame.time.Clock()
     running = True
     score = 0
-
-    import time
-    time.sleep(5)
 
     while running:
         for event in pygame.event.get():
@@ -59,11 +56,14 @@ def main():
         if player.pos[1] < LEVEL_LINE:
             scroll_value = LEVEL_LINE - player.pos[1]
             player.pos = player.pos[0], LEVEL_LINE
+            if score % 1000 < scroll_value:
+                platforms_handler.difficult += 5
+
+                print("DIFFICULT UPDATE")
             score += scroll_value
-            #print(score)
+            print(score)
 
         platforms_handler.update(scroll_value, FPS)
-
 
         clock.tick(FPS)
 

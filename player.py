@@ -82,8 +82,8 @@ class Player(Sprite):
             self.horizontal_speed = self.horizontal_force / self.weight
 
     def __update_vertical_speed(self, fps):
-        self.acceleration += self.gravitation / fps
-        self.vertical_speed += self.acceleration / fps
+        acceleration = self.gravitation
+        self.vertical_speed += acceleration / fps
 
     def __check_boundings(self):
         if self.rect.left + self.rect.width // 2 < self.world_boundings[0]:
@@ -114,9 +114,8 @@ class Player(Sprite):
         if collision is None:
             return
 
-        self.acceleration = 0
         self.vertical_speed = -collision.jump_force / self.weight
         self.rect.bottom = collision.top
         self.bounce()
+        collision.collision_react()
         return
-
