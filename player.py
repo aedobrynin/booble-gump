@@ -33,7 +33,7 @@ class Player(Sprite):
 
         self.right_mask = pygame.mask.Mask(self.rect.size)
         for i in range(31):
-            for j in range(30, self.rect.height):
+            for j in range(34, self.rect.height):
                 self.right_mask.set_at((i, j))
 
         self.mask = self.right_mask
@@ -92,20 +92,10 @@ class Player(Sprite):
         if self.rect.left + self.rect.width // 2 > self.world_boundings[2]:
             self.rect.left = self.world_boundings[0] - self.rect.width // 20
 
-    def update(self, platforms, fps):
-        self.__update_image()
+    def check_collisions_with_monsters(self, monsters):
+        pass
 
-        self.__update_vertical_speed(fps)
-        self.__update_horizontal_speed()
-
-        self.__check_boundings()
-
-        self.rect.move_ip((self.horizontal_speed / fps,
-                           self.vertical_speed / fps))
-
-        if self.vertical_speed <= 0:
-            return
-
+    def check_collisions_with_platforms(self, platforms):
         collision = \
             pygame.sprite.spritecollideany(self,
                                            platforms,
@@ -118,4 +108,22 @@ class Player(Sprite):
         self.rect.bottom = collision.top
         self.bounce()
         collision.collision_react()
-        return
+
+    def update(self, platforms, monsters, fps):
+        self.__update_image()
+
+        self.__update_vertical_speed(fps)
+        self.__update_horizontal_speed()
+
+        self.__check_boundings()
+
+        self.rect.move_ip((self.horizontal_speed / fps,
+                           self.vertical_speed / fps))
+
+
+        self.check_collisions_with_monsters(monsters)
+
+        if self.vertical_speed <= 0:
+            return
+
+        self.check_collisions_with_platforms(platforms)

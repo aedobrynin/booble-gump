@@ -6,9 +6,17 @@ from enum import Enum
 PACK_NAME = "blue"
 DATA_DIR = "./data"
 PACK_DIR = os.path.join(DATA_DIR, PACK_NAME)
-PLATFORMS_DIR = os.path.join(PACK_DIR, "platforms")
+
 PLAYER_DIR = os.path.join(PACK_DIR, "player")
-SOUNDS_DIR = os.path.join(PACK_DIR, "sounds")
+
+PLATFORMS_DIR = os.path.join(PACK_DIR, "platforms")
+P_SOUNDS_DIR = os.path.join(PLATFORMS_DIR, "sounds")
+P_IMAGES_DIR = os.path.join(PLATFORMS_DIR, "images")
+
+MONSTERS_DIR = os.path.join(PACK_DIR, "monsters")
+M_SOUNDS_DIR = os.path.join(MONSTERS_DIR, "sounds")
+M_IMAGES_DIR = os.path.join(MONSTERS_DIR, "images")
+
 BACKGROUND = pygame.image.load(os.path.join(PACK_DIR, "background.png"))
 
 FPS = 60
@@ -25,16 +33,21 @@ GRAVITATION = 1300
 PLATFORMS_JUMP_FORCE = 600
 PLATFORM_MOVE_SPEED = 100
 PLATFORM_WIDTH = 60
-PLATFORM_HEIGHT = 20
+PLATFORM_HEIGHT = 30
 
 PLAYER_WEIGHT = 1
-PLAYER_HORIZONTAL_FORCE = 400
+PLAYER_HORIZONTAL_FORCE = 350
 PLAYER_BOUNCE_ANIMATION_STEPS = 20
 PLAYER_HEIGHT = 42
 PLAYER_WIDTH = 44
 
 MAX_PLAYER_SPEED = PLATFORMS_JUMP_FORCE / PLAYER_WEIGHT
 MAX_PLAYER_JUMP_HEIGHT = int(MAX_PLAYER_SPEED ** 2 / (2 * GRAVITATION)) - PLAYER_HEIGHT
+
+MAX_DIFFICULT = 21
+
+START_PLATFORM_WEIGHTS = [80, 20, 0, 0]
+START_MONSTERS_WEIGHTS = [1]
 
 
 class Direction(Enum):
@@ -43,3 +56,4 @@ class Direction(Enum):
     RIGHT = 2
     UP = 3
     DOWN = 4
+

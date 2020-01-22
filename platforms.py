@@ -6,8 +6,9 @@ from config import *
 
 
 class BasePlatform(Sprite):
-    def __init__(self, pos, image):
+    def __init__(self, pos, image, sound=None):
         super().__init__(pos, image)
+        self.sound = sound
         self.mask = pygame.mask.from_surface(self.image)
         self.top = 0
         for j in range(self.image.get_height()):
@@ -40,17 +41,18 @@ class BasePlatform(Sprite):
         self._jump_force = value
 
     def collision_react(self):
-        pass
+        if self.sound is not None:
+            self.sound.play()
 
 
 class StaticPlatform(BasePlatform):
-    def __init__(self, pos, image):
-        super().__init__(pos, image)
+    def __init__(self, pos, image, sound=None):
+        super().__init__(pos, image, sound)
 
 
 class HorizontalMovingPlatform(BasePlatform):
-    def __init__(self, pos, image):
-        super().__init__(pos, image)
+    def __init__(self, pos, image, sound=None):
+        super().__init__(pos, image, sound)
         self.speed = PLATFORM_MOVE_SPEED
 
         self.left_lim = WORLD_BOUNDINGS[0] + 15
@@ -73,23 +75,33 @@ class HorizontalMovingPlatform(BasePlatform):
 
 
 class VanishPlatform(BasePlatform):
-    def __init__(self, pos, image):
-        super().__init__(pos, image)
+    def __init__(self, pos, image, sound=None):
+        super().__init__(pos, image, sound)
 
     def collision_react(self):
+        super().collision_react()
         self.kill()
 
 
-PLATFORM_TYPES = ((StaticPlatform, "static"),
-                  (HorizontalMovingPlatform, "moving"),
-                  (VanishPlatform, "vanish"))
-CHOICE_WEIGHTS = (0.5, 0.3, 0.2)
+class HorizontalMovingVanishPlatform(HorizontalMovingPlatform, VanishPlatform):
+    def __init__(self, pos, image, sound=None):
+        super().__init__(pos, image, sound)
 
 
-class RandomPlatformGenerator:
-    def __init__(self, world_boundings, images_dir):
+"""(Class, image_name, sound_name)"""
+PLATFORM_TYPES = ((StaticPlatform, "static", "pop"),
+                  (HorizontalMovingPlatform, "moving", "pop"),
+                  (VanishPlatform, "vanish", "vanish"),
+                  (HorizontalMovingVanishPlatform, "vanish", "vanish"))
+
+
+class WeightsBasedPlatformGenerator:
+    def __init__(self, world_boundings, images_dir, sounds_dir, weights):
         self.world_boundings = world_boundings
+        self.weights = weights
+
         self.load_images(images_dir)
+        self.load_sounds(sounds_dir)
 
     def load_images(self, images_dir):
         self.images = dict()
@@ -98,15 +110,32 @@ class RandomPlatformGenerator:
             self.images[class_name] = \
                 pygame.image.load(os.path.join(images_dir, filename))
 
+    def load_sounds(self, sounds_dir):
+        self.sounds = dict()
+        for _, _, filename in PLATFORM_TYPES:
+            self.sounds[filename] = \
+                pygame.mixer.Sound(os.path.join(sounds_dir, f"{filename}.wav"))
+
+    def make_harder(self):
+        for i in range(len(self.weights) - 2, -1, -1):
+            if self.weights[i] < max(self.weights[:-1]) or self.weights[i] < 9:
+                continue
+
+            taken = 9
+            self.weights[i] -= taken
+            add = 5
+            for j in range(i + 1, min(i + 3, len(self.weights))):
+                self.weights[j] += add
+                taken -= add
+                add -= 1
+            if taken > 0:
+                self.weights[i + 1] += taken
+        print(*self.weights)
+
     def generate(self, platform_pos):
-        platform_class, platform_class_name = \
-            random.choices(PLATFORM_TYPES, weights=CHOICE_WEIGHTS)[0]
+        platform_class, platform_image_name, platform_sound_name = \
+            random.choices(PLATFORM_TYPES, weights=self.weights)[0]
 
-        if platform_pos is None:
-            platform_x = random.randrange(self.world_boundings[0],
-                                          self.world_boundings[2] - 40)
-            platform_y = random.randrange(-MAX_PLAYER_JUMP_HEIGHT,
-                                          self.world_boundings[1])
-            platform_pos = (platform_x, platform_y)
-
-        return platform_class(platform_pos, self.images[platform_class_name])
+        return platform_class(platform_pos,
+                              self.images[platform_image_name],
+                              self.sounds[platform_sound_name])
