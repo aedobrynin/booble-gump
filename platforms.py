@@ -1,36 +1,16 @@
 import os
 import pygame
 import random
-from sprite import Sprite
+from sprite import MaskedSprite
 from config import *
 
 
-class BasePlatform(Sprite):
-    def __init__(self, pos, image, sound=None):
-        super().__init__(pos, image)
+class BasePlatform(MaskedSprite):
+    def __init__(self, pos, image, mask=None, sound=None):
+        super().__init__(pos, image, mask)
         self.sound = sound
-        self.mask = pygame.mask.from_surface(self.image)
-        self.top = 0
-        for j in range(self.image.get_height()):
-            for i in range(self.image.get_width()):
-                if self.mask.get_at((i, j)):
-                    self.top = j
-                    break
-
-            if self.top != 0:
-                break
 
         self.jump_force = PLATFORMS_JUMP_FORCE
-
-    @property
-    def top(self):
-        return self._top + self.rect.top
-
-    """This function sets only mask top,
-        not the whole platform"""
-    @top.setter
-    def top(self, value):
-        self._top = value
 
     @property
     def jump_force(self):
@@ -46,13 +26,13 @@ class BasePlatform(Sprite):
 
 
 class StaticPlatform(BasePlatform):
-    def __init__(self, pos, image, sound=None):
-        super().__init__(pos, image, sound)
+    def __init__(self, pos, image, mask=None, sound=None):
+        super().__init__(pos, image, mask, sound)
 
 
 class HorizontalMovingPlatform(BasePlatform):
-    def __init__(self, pos, image, sound=None):
-        super().__init__(pos, image, sound)
+    def __init__(self, pos, image, mask=None, sound=None):
+        super().__init__(pos, image, mask, sound)
         self.speed = PLATFORM_MOVE_SPEED
 
         self.left_lim = WORLD_BOUNDINGS[0] + 15
@@ -63,20 +43,20 @@ class HorizontalMovingPlatform(BasePlatform):
 
     def update(self, fps):
         if self.direction == Direction.LEFT:
-            self.pos = self.pos[0] - round(self.speed / fps), self.pos[1]
+            self.rect.left = self.pos[0] - round(self.speed / fps)
             if self.pos[0] <= self.left_lim:
                 self.direction = Direction.RIGHT
-                self.pos = self.left_lim, self.pos[1]
+                self.rect.left = self.left_lim
         else:
-            self.pos = self.pos[0] + round(self.speed / fps), self.pos[1]
+            self.rect.left = self.pos[0] + round(self.speed / fps)
             if self.pos[0] >= self.right_lim:
                 self.direction = Direction.LEFT
-                self.pos = self.right_lim, self.pos[1]
+                self.rect.left = self.right_lim
 
 
 class VanishPlatform(BasePlatform):
-    def __init__(self, pos, image, sound=None):
-        super().__init__(pos, image, sound)
+    def __init__(self, pos, image, mask=None, sound=None):
+        super().__init__(pos, image, mask, sound)
 
     def collision_react(self):
         super().collision_react()
@@ -84,11 +64,11 @@ class VanishPlatform(BasePlatform):
 
 
 class HorizontalMovingVanishPlatform(HorizontalMovingPlatform, VanishPlatform):
-    def __init__(self, pos, image, sound=None):
-        super().__init__(pos, image, sound)
+    def __init__(self, pos, image, mask=None, sound=None):
+        super().__init__(pos, image, mask, sound)
 
 
-"""(Class, image_name, sound_name)"""
+"""(Class, image name, sound name)"""
 PLATFORM_TYPES = ((StaticPlatform, "static", "pop"),
                   (HorizontalMovingPlatform, "moving", "pop"),
                   (VanishPlatform, "vanish", "vanish"),
@@ -101,6 +81,7 @@ class WeightsBasedPlatformGenerator:
         self.weights = weights
 
         self.load_images(images_dir)
+        self.load_masks()
         self.load_sounds(sounds_dir)
 
     def load_images(self, images_dir):
@@ -109,6 +90,11 @@ class WeightsBasedPlatformGenerator:
             class_name = filename.rsplit('.')[0]
             self.images[class_name] = \
                 pygame.image.load(os.path.join(images_dir, filename))
+
+    def load_masks(self):
+        self.masks = dict()
+        for class_name, image in self.images.items():
+            self.masks[class_name] = pygame.mask.from_surface(image)
 
     def load_sounds(self, sounds_dir):
         self.sounds = dict()
@@ -138,4 +124,5 @@ class WeightsBasedPlatformGenerator:
 
         return platform_class(platform_pos,
                               self.images[platform_image_name],
+                              self.masks[platform_image_name],
                               self.sounds[platform_sound_name])

@@ -29,8 +29,10 @@ class PlatformsHandler(pygame.sprite.Group):
             self.last_height = pos[1]
 
     def __calc_next_height(self):
-        min_h = int(self.last_height - PLATFORM_HEIGHT - MAX_PLAYER_JUMP_HEIGHT * self.difficult / MAX_DIFFICULT)
-        max_h = int(self.last_height - PLATFORM_HEIGHT - MAX_PLAYER_JUMP_HEIGHT * min(self.difficult + 10, MAX_DIFFICULT) / MAX_DIFFICULT)
+        min_h = \
+            int(self.last_height - PLATFORM_HEIGHT - MAX_PLAYER_JUMP_HEIGHT * self.difficult / MAX_DIFFICULT)
+        max_h = \
+            int(self.last_height - PLATFORM_HEIGHT - MAX_PLAYER_JUMP_HEIGHT * min(self.difficult + 10, MAX_DIFFICULT) / MAX_DIFFICULT)
 
         if max_h == min_h:
             return max_h

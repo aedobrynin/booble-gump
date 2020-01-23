@@ -1,13 +1,14 @@
 import os
 from enum import Enum
 import pygame
-from sprite import Sprite
+from sprite import MaskedSprite
 from config import *
 
 
-class Player(Sprite):
+class Player(MaskedSprite):
     def __init__(self, pos, images_dir, world_boundings):
-        self.load_images(images_dir)
+        self.load_images_and_masks(images_dir)
+
         self.vertical_speed = 0
 
         self.horizontal_speed = 0
@@ -24,26 +25,17 @@ class Player(Sprite):
 
         self.world_boundings = world_boundings
 
-        super().__init__(pos, self.images[self.image_code])
+        super().__init__(pos, self.images[self.image_code], self.masks[self.image_code])
 
-        self.left_mask = pygame.mask.Mask(self.rect.size)
-        for i in range(14, 45):
-            for j in range(30, self.rect.height):
-                self.left_mask.set_at((i, j))
-
-        self.right_mask = pygame.mask.Mask(self.rect.size)
-        for i in range(31):
-            for j in range(34, self.rect.height):
-                self.right_mask.set_at((i, j))
-
-        self.mask = self.right_mask
-
-    def load_images(self, images_dir):
+    def load_images_and_masks(self, images_dir):
         self.images = dict()
+        self.masks = dict()
         for filename in os.listdir(images_dir):
             state_name = filename.rsplit('.')[0]
-            self.images[state_name] = \
-                pygame.image.load(os.path.join(images_dir, filename))
+            image = pygame.image.load(os.path.join(images_dir, filename))
+            mask = pygame.mask.from_surface(image)
+            self.images[state_name] = image
+            self.masks[state_name] = mask
 
     @property
     def horizontal_direction(self):
@@ -56,10 +48,9 @@ class Player(Sprite):
     def __update_image(self):
         if self.horizontal_direction == Direction.LEFT:
             self.image_code = "left"
-            self.mask = self.left_mask
+
         elif self.horizontal_direction == Direction.RIGHT:
             self.image_code = "right"
-            self.mask = self.right_mask
 
         if self.bounce_step == PLAYER_BOUNCE_ANIMATION_STEPS:
             self.bounce_step = -1
@@ -69,6 +60,7 @@ class Player(Sprite):
             self.bounce_step += 1
         else:
             self.image = self.images[self.image_code]
+            self.mask = self.masks[self.image_code]
 
     def bounce(self):
         self.bounce_step = 0
@@ -93,7 +85,25 @@ class Player(Sprite):
             self.rect.left = self.world_boundings[0] - self.rect.width // 20
 
     def check_collisions_with_monsters(self, monsters):
-        pass
+        collision = \
+            pygame.sprite.spritecollideany(self,
+                                           monsters,
+                                           collided=pygame.sprite.collide_mask)
+
+        if collision is None or collision.dead:
+            return
+
+        collision_point = pygame.sprite.collide_mask(self, collision)
+        print(collision_point)
+        if collision_point[1] > PLAYER_LEGS_LEVEL:
+            print("kill")
+            self.vertical_speed = -collision.jump_force / self.weight
+            self.rect.bottom = collision.rect.top
+            collision.die()
+            return
+
+        print("game over")
+        exit(0)
 
     def check_collisions_with_platforms(self, platforms):
         collision = \
@@ -104,8 +114,13 @@ class Player(Sprite):
         if collision is None:
             return
 
+        collision_point = pygame.sprite.collide_mask(self, collision)
+
+        if collision_point[1] < PLAYER_LEGS_LEVEL:
+            return
+
         self.vertical_speed = -collision.jump_force / self.weight
-        self.rect.bottom = collision.top
+        self.rect.bottom = collision.rect.top
         self.bounce()
         collision.collision_react()
 
@@ -119,7 +134,6 @@ class Player(Sprite):
 
         self.rect.move_ip((self.horizontal_speed / fps,
                            self.vertical_speed / fps))
-
 
         self.check_collisions_with_monsters(monsters)
 

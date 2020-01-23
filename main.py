@@ -49,7 +49,9 @@ def main():
 
         pygame.display.flip()
 
-        player.update(entities_handler.platforms, entities_handler.monsters, FPS)
+        player.update(entities_handler.platforms,
+                      entities_handler.monsters,
+                      FPS)
 
         if player.pos[1] > WORLD_BOUNDINGS[3]:
             print("game_over")
@@ -62,7 +64,7 @@ def main():
             if score // 2000 < (score + scroll_value) // 2000:
                 entities_handler.make_harder()
             score += scroll_value
-            print(score)
+            #print(score)
         entities_handler.update(scroll_value, FPS)
 
         clock.tick(FPS)

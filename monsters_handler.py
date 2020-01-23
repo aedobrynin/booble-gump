@@ -26,4 +26,7 @@ class MonstersHandler(pygame.sprite.Group):
                 if monster.pos[1] > self.world_boundings[3]:
                     self.remove(monster)
 
+        if len(self) == 0:
+            self.add(self.monster_generator.generate((0, 0)))
+
         super().update(fps)
