@@ -9,6 +9,7 @@ class BasePlatform(Sprite):
     def __init__(self, pos, image, sound=None):
         super().__init__(pos, image)
         self.sound = sound
+
         self.mask = pygame.mask.from_surface(self.image)
         self.top = 0
         for j in range(self.image.get_height()):

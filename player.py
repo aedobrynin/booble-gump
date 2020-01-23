@@ -2,7 +2,9 @@ import os
 from enum import Enum
 import pygame
 from sprite import Sprite
+
 from config import *
+
 
 
 class Player(Sprite):
@@ -11,12 +13,14 @@ class Player(Sprite):
         self.vertical_speed = 0
 
         self.horizontal_speed = 0
+
         self.horizontal_force = PLAYER_HORIZONTAL_FORCE
         self.horizontal_direction = Direction.STALL
 
         self.weight = PLAYER_WEIGHT
 
         self.gravitation = GRAVITATION
+
         self.acceleration = 0
         self.image_code = "right"
 
@@ -33,6 +37,7 @@ class Player(Sprite):
 
         self.right_mask = pygame.mask.Mask(self.rect.size)
         for i in range(31):
+
             for j in range(34, self.rect.height):
                 self.right_mask.set_at((i, j))
 
@@ -119,7 +124,6 @@ class Player(Sprite):
 
         self.rect.move_ip((self.horizontal_speed / fps,
                            self.vertical_speed / fps))
-
 
         self.check_collisions_with_monsters(monsters)
 

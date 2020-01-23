@@ -19,7 +19,7 @@ class Sprite(pygame.sprite.Sprite):
     def draw(self, surface):
         surface.blit(self.image, self.pos)
 
-
+        
 class AnimatedSprite(Sprite):
     def __init__(self, pos, frames):
         self.frames = frames

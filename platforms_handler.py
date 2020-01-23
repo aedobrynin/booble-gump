@@ -1,5 +1,6 @@
 import pygame
 import random
+
 from platforms import WeightsBasedPlatformGenerator
 from config import *
 
@@ -56,6 +57,7 @@ class PlatformsHandler(pygame.sprite.Group):
                 platform.rect.move_ip((0, scroll_value))
                 if platform.pos[1] > self.world_boundings[3]:
                     self.remove(platform)
+
             self.last_height += scroll_value
 
         while self.last_height > -MAX_PLAYER_JUMP_HEIGHT:

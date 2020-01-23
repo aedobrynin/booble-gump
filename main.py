@@ -5,6 +5,7 @@ from entities_handler import EntitiesHandler
 from config import *
 
 
+
 def main():
     pygame.init()
 
@@ -24,6 +25,7 @@ def main():
     clock = pygame.time.Clock()
     running = True
     score = 0
+
 
     while running:
         for event in pygame.event.get():
@@ -45,6 +47,7 @@ def main():
 
         screen.blit(BACKGROUND, (0, 0))
         entities_handler.draw(screen)
+
         player.draw(screen)
 
         pygame.display.flip()
