@@ -75,7 +75,7 @@ PLATFORM_TYPES = ((StaticPlatform, "static", "pop"),
                   (HorizontalMovingVanishPlatform, "vanish", "vanish"))
 
 
-class WeightsBasedPlatformGenerator:
+class WeightBasedPlatformGenerator:
     def __init__(self, world_boundings, images_dir, sounds_dir, weights):
         self.world_boundings = world_boundings
         self.weights = weights

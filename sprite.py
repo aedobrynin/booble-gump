@@ -4,6 +4,8 @@ import pygame
 class MaskedSprite(pygame.sprite.Sprite):
     def __init__(self, pos, image, mask=None):
         super().__init__()
+
+        self.rect = None
         self.image = image
 
         if mask is None:
@@ -11,8 +13,19 @@ class MaskedSprite(pygame.sprite.Sprite):
         else:
             self.mask = mask
 
-        self.rect = self.image.get_rect()
         self.rect.topleft = pos
+
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, value):
+        self._image = value
+        if self.rect is None:
+            self.rect = self.image.get_rect()
+        else:
+            self.rect.size = self.image.get_size()
 
     @property
     def pos(self):

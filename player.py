@@ -22,6 +22,7 @@ class Player(MaskedSprite):
         self.image_code = "right"
 
         self.bounce_step = -1
+        self.shoot_step = -1
 
         self.world_boundings = world_boundings
 
@@ -55,15 +56,26 @@ class Player(MaskedSprite):
         if self.bounce_step == PLAYER_BOUNCE_ANIMATION_STEPS:
             self.bounce_step = -1
 
+        if self.shoot_step == PLAYER_SHOOT_ANIMATION_STEPS:
+            self.shoot_step = -1
+
+        cur_image_code = self.image_code
+        if self.shoot_step != -1:
+            cur_image_code += "-shoot"
+            self.shoot_step += 1
+
         if self.bounce_step != -1:
-            self.image = self.images[self.image_code + "-bounce"]
+            cur_image_code += "-bounce"
             self.bounce_step += 1
-        else:
-            self.image = self.images[self.image_code]
-            self.mask = self.masks[self.image_code]
+
+        self.image = self.images[cur_image_code]
+        self.mask = self.masks[cur_image_code]
 
     def bounce(self):
         self.bounce_step = 0
+
+    def shoot(self):
+        self.shoot_step = 0
 
     def __update_horizontal_speed(self):
         if self.horizontal_direction == Direction.STALL:
@@ -85,6 +97,7 @@ class Player(MaskedSprite):
             self.rect.left = self.world_boundings[0] - self.rect.width // 20
 
     def check_collisions_with_monsters(self, monsters):
+        pass
         collision = \
             pygame.sprite.spritecollideany(self,
                                            monsters,
@@ -94,8 +107,8 @@ class Player(MaskedSprite):
             return
 
         collision_point = pygame.sprite.collide_mask(self, collision)
-        print(collision_point)
-        if collision_point[1] > PLAYER_LEGS_LEVEL:
+
+        if collision_point[1] >= self.image.get_height() - PLAYER_LEGS_LENGTH:
             print("kill")
             self.vertical_speed = -collision.jump_force / self.weight
             self.rect.bottom = collision.rect.top
@@ -116,7 +129,7 @@ class Player(MaskedSprite):
 
         collision_point = pygame.sprite.collide_mask(self, collision)
 
-        if collision_point[1] < PLAYER_LEGS_LEVEL:
+        if collision_point[1] < self.image.get_height() - PLAYER_LEGS_LENGTH:
             return
 
         self.vertical_speed = -collision.jump_force / self.weight

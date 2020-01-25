@@ -6,7 +6,7 @@ from config import *
 
 
 class BaseMonster(MaskedSprite):
-    def __init__(self, pos, images, masks=None, death_sound=None):
+    def __init__(self, platform, images, masks=None, death_sound=None):
         self.images = images
 
         if masks is None:
@@ -16,7 +16,10 @@ class BaseMonster(MaskedSprite):
         else:
             self.masks = masks
 
-        super().__init__(pos, self.images[0], self.masks[0])
+        self.platform = platform
+        super().__init__((0, 0), self.images[0], self.masks[0])
+
+        self.rect.midbottom = self.platform.rect.midtop
 
         self.dead = False
         self.jump_force = MONSTER_JUMP_FORCE
@@ -43,16 +46,13 @@ class BaseMonster(MaskedSprite):
             self.rect.move_ip((0, MONSTER_FALL_SPEED / fps))
             return
 
+        self.rect.left = self.platform.rect.left
 
 """(Class, monster name, death sound name)"""
-MONSTER_TYPES = ((BaseMonster, "blue", "metal_hit"),
-                 (BaseMonster, "pink", "metal_hit"),
-                 (BaseMonster, "orange", "metal_hit"),
-                 (BaseMonster, "green", "metal_hit"),
-                 (BaseMonster, "yellow", "metal_hit"))
+MONSTER_TYPES = ((BaseMonster, "long", "metal_hit"), )
 
 
-class WeightsBasedMonsterGenerator:
+class WeightBasedMonsterGenerator:
     def __init__(self, world_boundings, images_dir, sounds_dir, weights):
         self.world_boundings = world_boundings
         self.weights = weights
@@ -91,11 +91,14 @@ class WeightsBasedMonsterGenerator:
             sound = pygame.mixer.Sound(os.path.join(sounds_dir, file))
             self.sounds[sound_name] = sound
 
-    def generate(self, monster_pos):
+    def make_harder(self):
+        pass
+
+    def generate(self, platform):
         monster_class, monster_name, monster_sound_name = \
             random.choices(MONSTER_TYPES, weights=self.weights)[0]
 
-        return monster_class(monster_pos,
+        return monster_class(platform,
                              self.images[monster_name],
                              self.masks[monster_name],
                              self.sounds[monster_sound_name])

@@ -16,7 +16,7 @@ def main():
                                        M_IMAGES_DIR,
                                        M_SOUNDS_DIR)
 
-    player = Player((150, 500),
+    player = Player((150, 480),
                     PLAYER_DIR,
                     WORLD_BOUNDINGS)
     player.vertical_speed = -835
@@ -35,6 +35,8 @@ def main():
                     player.horizontal_direction = Direction.LEFT
                 elif event.key == RIGHT_KEY:
                     player.horizontal_direction = Direction.RIGHT
+                elif event.key in SHOOT_KEYS:
+                    player.shoot()
 
             if event.type == pygame.KEYUP:
                 if (event.key == LEFT_KEY and
@@ -53,7 +55,7 @@ def main():
                       entities_handler.monsters,
                       FPS)
 
-        if player.pos[1] > WORLD_BOUNDINGS[3]:
+        if player.pos[1] + PLAYER_HEIGHT > WORLD_BOUNDINGS[3]:
             print("game_over")
             running = False
 
@@ -65,8 +67,8 @@ def main():
                 entities_handler.make_harder()
             score += scroll_value
             #print(score)
-        entities_handler.update(scroll_value, FPS)
 
+        entities_handler.update(scroll_value, FPS)
         clock.tick(FPS)
 
     pygame.quit()
