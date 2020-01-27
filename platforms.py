@@ -76,8 +76,7 @@ PLATFORM_TYPES = ((StaticPlatform, "static", "pop"),
 
 
 class WeightBasedPlatformGenerator:
-    def __init__(self, world_boundings, images_dir, sounds_dir, weights):
-        self.world_boundings = world_boundings
+    def __init__(self, images_dir, sounds_dir, weights):
         self.weights = weights
 
         self.load_images(images_dir)

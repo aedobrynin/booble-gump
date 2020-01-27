@@ -7,23 +7,19 @@ from config import *
 
 
 class EntitiesHandler:
-    def __init__(self, world_boundings, p_images_dir, p_sounds_dir,
+    def __init__(self, p_images_dir, p_sounds_dir,
                  m_images_dir, m_sounds_dir):
-        self.world_boundings = world_boundings
-
         self.platforms = pygame.sprite.Group()
         self.monsters = pygame.sprite.Group()
 
         self.last_platform = None
         self.last_monster = None
 
-        self.platform_generator = WeightBasedPlatformGenerator(world_boundings,
-                                                               p_images_dir,
+        self.platform_generator = WeightBasedPlatformGenerator(p_images_dir,
                                                                p_sounds_dir,
                                                                P_INITIAL_WEIGHTS)
 
-        self.monster_generator = WeightBasedMonsterGenerator(world_boundings,
-                                                             m_images_dir,
+        self.monster_generator = WeightBasedMonsterGenerator(m_images_dir,
                                                              m_sounds_dir,
                                                              M_INITIAL_WEIGHTS)
         self.difficult = 0
@@ -34,11 +30,11 @@ class EntitiesHandler:
         self.difficult = min(self.difficult + 1, MAX_DIFFICULT)
 
     def __calc_next_pos(self):
-        pos_x = randrange(self.world_boundings[0],
-                          self.world_boundings[2] - PLATFORM_WIDTH)
+        pos_x = randrange(WORLD_BOUNDINGS[0],
+                          WORLD_BOUNDINGS[2] - PLATFORM_WIDTH)
 
         if self.last_platform is None:
-            last_platform_height = self.world_boundings[3]
+            last_platform_height = WORLD_BOUNDINGS[3]
         else:
             last_platform_height = self.last_platform.pos[1]
 
@@ -60,7 +56,7 @@ class EntitiesHandler:
         if scroll_value:
             for platform in self.platforms:
                 platform.rect.move_ip((0, scroll_value))
-                if platform.pos[1] > P_ALIVE_COEFFICIENT * self.world_boundings[3]:
+                if platform.pos[1] > P_ALIVE_COEFFICIENT * WORLD_BOUNDINGS[3]:
                     platform.kill()
 
         while self.last_platform is None or\
@@ -86,7 +82,7 @@ class EntitiesHandler:
     def update_monsters(self, scroll_value, fps):
         for monster in self.monsters:
             monster.rect.move_ip((0, scroll_value))
-            if monster.pos[1] > self.world_boundings[3]:
+            if monster.pos[1] > WORLD_BOUNDINGS[3]:
                 monster.kill()
                 if self.last_monster == monster:
                     self.last_monster = None

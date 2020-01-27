@@ -2,11 +2,12 @@ import os
 from enum import Enum
 import pygame
 from sprite import MaskedSprite
+from shells import BaseShell
 from config import *
 
 
 class Player(MaskedSprite):
-    def __init__(self, pos, images_dir, world_boundings):
+    def __init__(self, pos, images_dir, shoot_sound=None):
         self.load_images_and_masks(images_dir)
 
         self.vertical_speed = 0
@@ -22,9 +23,10 @@ class Player(MaskedSprite):
         self.image_code = "right"
 
         self.bounce_step = -1
-        self.shoot_step = -1
 
-        self.world_boundings = world_boundings
+        self.shoot_step = -1
+        self.shoot_sound = shoot_sound
+        self.shells = pygame.sprite.Group()
 
         super().__init__(pos, self.images[self.image_code], self.masks[self.image_code])
 
@@ -75,7 +77,29 @@ class Player(MaskedSprite):
         self.bounce_step = 0
 
     def shoot(self):
+        if self.shoot_step != -1:
+            return
+
         self.shoot_step = 0
+
+        shell_image = self.images["shell"]
+        shell_mask = self.masks["shell"]
+        shell = BaseShell((0, 0), shell_image, shell_mask)
+
+        shell.pos = self.pos
+        if self.image_code == "left":
+            shift = list(LEFT_NOSE_POS)
+            shift[0] -= shell.rect.width // 2
+            shell.rect.move_ip(shift)
+        else:
+            shift = list(RIGHT_NOSE_POS)
+            shift[0] -= shell.rect.width // 2
+            shell.rect.move_ip(shift)
+
+        self.shells.add(shell)
+
+        if self.shoot_sound is not None:
+            self.shoot_sound.play()
 
     def __update_horizontal_speed(self):
         if self.horizontal_direction == Direction.STALL:
@@ -90,14 +114,13 @@ class Player(MaskedSprite):
         self.vertical_speed += acceleration / fps
 
     def __check_boundings(self):
-        if self.rect.left + self.rect.width // 2 < self.world_boundings[0]:
-            self.rect.right = self.world_boundings[2] + self.rect.width // 2
+        if self.rect.left + self.rect.width // 2 < WORLD_BOUNDINGS[0]:
+            self.rect.right = WORLD_BOUNDINGS[2] + self.rect.width // 2
 
-        if self.rect.left + self.rect.width // 2 > self.world_boundings[2]:
-            self.rect.left = self.world_boundings[0] - self.rect.width // 20
+        if self.rect.left + self.rect.width // 2 > WORLD_BOUNDINGS[2]:
+            self.rect.left = WORLD_BOUNDINGS[0] - self.rect.width // 20
 
     def check_collisions_with_monsters(self, monsters):
-        pass
         collision = \
             pygame.sprite.spritecollideany(self,
                                            monsters,
@@ -112,7 +135,7 @@ class Player(MaskedSprite):
             print("kill")
             self.vertical_speed = -collision.jump_force / self.weight
             self.rect.bottom = collision.rect.top
-            collision.die()
+            collision.fall_down()
             return
 
         print("game over")
@@ -137,6 +160,15 @@ class Player(MaskedSprite):
         self.bounce()
         collision.collision_react()
 
+    def check_shells_collisions(self, monsters):
+        killed_monsters = pygame.sprite.groupcollide(self.shells,
+                                   monsters, True, False,
+                                   collided=pygame.sprite.collide_mask).values()
+
+        for monster in killed_monsters:
+            monster[0].shoot_down()
+
+
     def update(self, platforms, monsters, fps):
         self.__update_image()
 
@@ -148,9 +180,16 @@ class Player(MaskedSprite):
         self.rect.move_ip((self.horizontal_speed / fps,
                            self.vertical_speed / fps))
 
+
         self.check_collisions_with_monsters(monsters)
+        self.shells.update(fps)
+        self.check_shells_collisions(monsters)
 
         if self.vertical_speed <= 0:
             return
 
         self.check_collisions_with_platforms(platforms)
+
+    def draw(self, surface):
+        super().draw(surface)
+        self.shells.draw(surface)

@@ -10,15 +10,16 @@ def main():
 
     screen = pygame.display.set_mode(WINDOW_SIZE)
 
-    entities_handler = EntitiesHandler(WORLD_BOUNDINGS,
-                                       P_IMAGES_DIR,
+    entities_handler = EntitiesHandler(P_IMAGES_DIR,
                                        P_SOUNDS_DIR,
                                        M_IMAGES_DIR,
                                        M_SOUNDS_DIR)
 
+    player_shoot_sound = pygame.mixer.Sound(PLAYER_SHOOT_SOUND_PATH)
     player = Player((150, 480),
-                    PLAYER_DIR,
-                    WORLD_BOUNDINGS)
+                    PLAYER_IMAGES_DIR,
+                    player_shoot_sound)
+
     player.vertical_speed = -835
 
     clock = pygame.time.Clock()
@@ -66,9 +67,13 @@ def main():
             if score // 2000 < (score + scroll_value) // 2000:
                 entities_handler.make_harder()
             score += scroll_value
-            #print(score)
+            print(score)
 
         entities_handler.update(scroll_value, FPS)
+
+        # import time
+        # time.sleep(0.1)
+
         clock.tick(FPS)
 
     pygame.quit()

@@ -6,7 +6,8 @@ from config import *
 
 
 class BaseMonster(MaskedSprite):
-    def __init__(self, platform, images, masks=None, death_sound=None):
+    def __init__(self, platform, images, masks=None,
+                 fall_down_sound=None, shoot_down_sound=None):
         self.images = images
 
         if masks is None:
@@ -23,7 +24,9 @@ class BaseMonster(MaskedSprite):
 
         self.dead = False
         self.jump_force = MONSTER_JUMP_FORCE
-        self.death_sound = death_sound
+
+        self.fall_down_sound = fall_down_sound
+        self.shoot_down_sound = shoot_down_sound
 
     @property
     def jump_force(self):
@@ -33,13 +36,21 @@ class BaseMonster(MaskedSprite):
     def jump_force(self, val):
         self._jump_force = val
 
-    def die(self):
+    def fall_down(self):
         self.dead = True
         self.image = self.images[1]
         self.mask = self.masks[1]
 
-        if self.death_sound is not None:
-            self.death_sound.play()
+        if self.fall_down_sound is not None:
+            self.fall_down_sound.play()
+
+    def shoot_down(self):
+        self.dead = True
+
+        if self.shoot_down_sound is not None:
+            self.shoot_down_sound.play()
+
+        self.kill()
 
     def update(self, fps):
         if self.dead:
@@ -48,13 +59,12 @@ class BaseMonster(MaskedSprite):
 
         self.rect.left = self.platform.rect.left
 
-"""(Class, monster name, death sound name)"""
-MONSTER_TYPES = ((BaseMonster, "long", "metal_hit"), )
+"""(Class, monster name, fall down sound name, shoot down sound name)"""
+MONSTER_TYPES = ((BaseMonster, "long", "fall_down", "shoot_down"), )
 
 
 class WeightBasedMonsterGenerator:
-    def __init__(self, world_boundings, images_dir, sounds_dir, weights):
-        self.world_boundings = world_boundings
+    def __init__(self, images_dir, sounds_dir, weights):
         self.weights = weights
 
         self.load_images(images_dir)
@@ -95,10 +105,11 @@ class WeightBasedMonsterGenerator:
         pass
 
     def generate(self, platform):
-        monster_class, monster_name, monster_sound_name = \
+        m_class, m_name, m_fall_down_sound_name, m_shoot_down_sound_name = \
             random.choices(MONSTER_TYPES, weights=self.weights)[0]
 
-        return monster_class(platform,
-                             self.images[monster_name],
-                             self.masks[monster_name],
-                             self.sounds[monster_sound_name])
+        return m_class(platform,
+                       self.images[m_name],
+                       self.masks[m_name],
+                       self.sounds[m_fall_down_sound_name],
+                       self.sounds[m_shoot_down_sound_name])
