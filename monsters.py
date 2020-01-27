@@ -6,19 +6,11 @@ from config import *
 
 
 class BaseMonster(MaskedSprite):
-    def __init__(self, platform, images, masks=None,
+    def __init__(self, platform, image, mask=None,
                  fall_down_sound=None, shoot_down_sound=None):
-        self.images = images
-
-        if masks is None:
-            self.masks = list()
-            for image in self.images:
-                self.masks.append(pygame.mask.from_surface(image))
-        else:
-            self.masks = masks
 
         self.platform = platform
-        super().__init__((0, 0), self.images[0], self.masks[0])
+        super().__init__((0, 0), image, mask)
 
         self.rect.midbottom = self.platform.rect.midtop
 
@@ -38,8 +30,6 @@ class BaseMonster(MaskedSprite):
 
     def fall_down(self):
         self.dead = True
-        self.image = self.images[1]
-        self.mask = self.masks[1]
 
         if self.fall_down_sound is not None:
             self.fall_down_sound.play()
@@ -59,8 +49,17 @@ class BaseMonster(MaskedSprite):
 
         self.rect.left = self.platform.rect.left
 
+
 """(Class, monster name, fall down sound name, shoot down sound name)"""
-MONSTER_TYPES = ((BaseMonster, "long", "fall_down", "shoot_down"), )
+MONSTER_TYPES = ((BaseMonster, "long", "fall_down", "shoot_down"),
+                 (BaseMonster, "clumsy", "fall_down", "shoot_down"),
+                 (BaseMonster, "hare", "fall_down", "shoot_down"),
+                 (BaseMonster, "kind", "fall_down", "shoot_down"),
+                 (BaseMonster, "rabbit", "fall_down", "shoot_down"),
+                 (BaseMonster, "robot", "fall_down", "shoot_down"),
+                 (BaseMonster, "toothy", "fall_down", "shoot_down"),
+                 (BaseMonster, "triangle", "fall_down", "shoot_down"),
+                 (BaseMonster, "zombie", "fall_down", "shoot_down"))
 
 
 class WeightBasedMonsterGenerator:
@@ -75,24 +74,16 @@ class WeightBasedMonsterGenerator:
         self.images = dict()
 
         for file in os.listdir(images_dir):
-            dir_path = os.path.join(images_dir, file)
-            if os.path.isdir(dir_path):
-                monster_name = file.rsplit('/')[-1]
-                self.images[monster_name] = list()
-
-                for filename in sorted(os.listdir(dir_path)):
-                    filepath = os.path.join(os.path.join(dir_path, filename))
-                    image = pygame.image.load(filepath)
-                    self.images[monster_name].append(image)
+            monster_name = file.rsplit('.')[0]
+            image = pygame.image.load(os.path.join(images_dir, file))
+            self.images[monster_name] = image
 
     def load_masks(self):
         self.masks = dict()
 
-        for monster_name, images in self.images.items():
-            self.masks[monster_name] = list()
-            for image in images:
-                mask = pygame.mask.from_surface(image)
-                self.masks[monster_name].append(mask)
+        for monster_name, image in self.images.items():
+            mask = pygame.mask.from_surface(image)
+            self.masks[monster_name] = mask
 
     def load_sounds(self, sounds_dir):
         self.sounds = dict()
@@ -101,7 +92,7 @@ class WeightBasedMonsterGenerator:
             sound = pygame.mixer.Sound(os.path.join(sounds_dir, file))
             self.sounds[sound_name] = sound
 
-    def make_harder(self):
+    def reset(self):
         pass
 
     def generate(self, platform):

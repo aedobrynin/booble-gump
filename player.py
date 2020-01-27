@@ -7,7 +7,7 @@ from config import *
 
 
 class Player(MaskedSprite):
-    def __init__(self, pos, images_dir, shoot_sound=None):
+    def __init__(self, pos, images_dir, shoot_sound=None, death_sound=None):
         self.load_images_and_masks(images_dir)
 
         self.vertical_speed = 0
@@ -28,7 +28,12 @@ class Player(MaskedSprite):
         self.shoot_sound = shoot_sound
         self.shells = pygame.sprite.Group()
 
-        super().__init__(pos, self.images[self.image_code], self.masks[self.image_code])
+        self.dead = False
+        self.death_sound = death_sound
+
+        super().__init__(pos,
+                         self.images[self.image_code],
+                         self.masks[self.image_code])
 
     def load_images_and_masks(self, images_dir):
         self.images = dict()
@@ -132,14 +137,12 @@ class Player(MaskedSprite):
         collision_point = pygame.sprite.collide_mask(self, collision)
 
         if collision_point[1] >= self.image.get_height() - PLAYER_LEGS_LENGTH:
-            print("kill")
             self.vertical_speed = -collision.jump_force / self.weight
             self.rect.bottom = collision.rect.top
             collision.fall_down()
             return
 
-        print("game over")
-        exit(0)
+        self.die()
 
     def check_collisions_with_platforms(self, platforms):
         collision = \
@@ -161,15 +164,29 @@ class Player(MaskedSprite):
         collision.collision_react()
 
     def check_shells_collisions(self, monsters):
-        killed_monsters = pygame.sprite.groupcollide(self.shells,
-                                   monsters, True, False,
-                                   collided=pygame.sprite.collide_mask).values()
+        killed_monsters = \
+            pygame.sprite.groupcollide(self.shells,
+                                       monsters, True, False,
+                                       collided=pygame.sprite.collide_mask)
 
-        for monster in killed_monsters:
+        for monster in killed_monsters.values():
             monster[0].shoot_down()
 
+    def die(self):
+        self.dead = True
+
+        if self.death_sound is not None:
+            self.death_sound.play()
 
     def update(self, platforms, monsters, fps):
+        if self.dead:
+            self.__update_image()
+            self.__update_vertical_speed(fps)
+            self.rect.move_ip((self.horizontal_speed / fps,
+                               self.vertical_speed / fps))
+            self.shells.update(fps)
+            return
+
         self.__update_image()
 
         self.__update_vertical_speed(fps)
@@ -180,16 +197,23 @@ class Player(MaskedSprite):
         self.rect.move_ip((self.horizontal_speed / fps,
                            self.vertical_speed / fps))
 
-
         self.check_collisions_with_monsters(monsters)
-        self.shells.update(fps)
-        self.check_shells_collisions(monsters)
+        if self.dead is False:
+            self.shells.update(fps)
+            self.check_shells_collisions(monsters)
 
-        if self.vertical_speed <= 0:
-            return
+            if self.vertical_speed <= 0:
+                return
 
-        self.check_collisions_with_platforms(platforms)
+            self.check_collisions_with_platforms(platforms)
+
+        if self.rect.bottom > WORLD_BOUNDINGS[3]:
+            self.dead = True
+
+        if self.rect.top > WORLD_BOUNDINGS[3]:
+            self.kill()
 
     def draw(self, surface):
         super().draw(surface)
         self.shells.draw(surface)
+

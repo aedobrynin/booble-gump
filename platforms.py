@@ -115,7 +115,9 @@ class WeightBasedPlatformGenerator:
                 add -= 1
             if taken > 0:
                 self.weights[i + 1] += taken
-        print(*self.weights)
+
+    def reset(self):
+        self.weights = P_INITIAL_WEIGHTS
 
     def generate(self, platform_pos):
         platform_class, platform_image_name, platform_sound_name = \

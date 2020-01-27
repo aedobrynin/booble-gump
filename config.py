@@ -9,18 +9,20 @@ PACK_DIR = os.path.join(DATA_DIR, PACK_NAME)
 
 PLAYER_DIR = os.path.join(PACK_DIR, "player")
 PLAYER_SHOOT_SOUND_PATH = os.path.join(PLAYER_DIR, "sounds", "blaster.wav")
+PLAYER_DEATH_SOUND_PATH = os.path.join(PLAYER_DIR, "sounds", "crash.wav")
 PLAYER_IMAGES_DIR = os.path.join(PLAYER_DIR, "images")
 
 PLATFORMS_DIR = os.path.join(PACK_DIR, "platforms")
 P_SOUNDS_DIR = os.path.join(PLATFORMS_DIR, "sounds")
 P_IMAGES_DIR = os.path.join(PLATFORMS_DIR, "images")
 P_INITIAL_WEIGHTS = [80, 20, 0, 0]
-P_ALIVE_COEFFICIENT = 1.3
+P_ALIVE_COEFFICIENT = 2
+P_FALL_SPEED = -1000
 
 MONSTERS_DIR = os.path.join(PACK_DIR, "monsters")
 M_SOUNDS_DIR = os.path.join(MONSTERS_DIR, "sounds")
 M_IMAGES_DIR = os.path.join(MONSTERS_DIR, "images")
-M_INITIAL_WEIGHTS = [100]
+M_INITIAL_WEIGHTS = list(1 for _ in range(9))
 
 BACKGROUND = pygame.image.load(os.path.join(PACK_DIR, "background.png"))
 
@@ -32,7 +34,6 @@ SHOOT_KEYS = (pygame.K_SPACE, pygame.K_UP)
 WINDOW_SIZE = WINDOW_WIDTH, WINDOW_HEIGHT = 320, 512
 WORLD_BOUNDINGS = (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
 LEVEL_LINE = WINDOW_HEIGHT // 2
-
 GRAVITATION = 1300
 
 PLATFORMS_JUMP_FORCE = 600
@@ -59,6 +60,9 @@ MAX_DIFFICULT = 21
 MONSTER_TOP_LEVEL = 5
 MONSTER_FALL_SPEED = 500
 MONSTER_JUMP_FORCE = 800
+
+
+MENU_PLATFORM_HEIGHT = WORLD_BOUNDINGS[3] - 100
 
 
 class Direction(Enum):

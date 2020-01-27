@@ -9,6 +9,8 @@ from config import *
 class EntitiesHandler:
     def __init__(self, p_images_dir, p_sounds_dir,
                  m_images_dir, m_sounds_dir):
+        self.generate = True
+
         self.platforms = pygame.sprite.Group()
         self.monsters = pygame.sprite.Group()
 
@@ -26,7 +28,7 @@ class EntitiesHandler:
 
     def make_harder(self):
         self.platform_generator.make_harder()
-        self.monster_generator.make_harder()
+        self.spawn_monster()
         self.difficult = min(self.difficult + 1, MAX_DIFFICULT)
 
     def __calc_next_pos(self):
@@ -56,28 +58,42 @@ class EntitiesHandler:
         if scroll_value:
             for platform in self.platforms:
                 platform.rect.move_ip((0, scroll_value))
-                if platform.pos[1] > P_ALIVE_COEFFICIENT * WORLD_BOUNDINGS[3]:
+                if platform.pos[1] > P_ALIVE_COEFFICIENT * WORLD_BOUNDINGS[3] or\
+                   platform.pos[1] < -200:
                     platform.kill()
 
+        if not self.generate:
+            self.platforms.update(fps)
+            return
+
         while self.last_platform is None or\
-               self.last_platform.pos[1] > -MAX_PLAYER_JUMP_HEIGHT:
+                self.last_platform.pos[1] > -MAX_PLAYER_JUMP_HEIGHT:
             pos = self.__calc_next_pos()
             platform = self.platform_generator.generate(pos)
 
             if isinstance(platform, HorizontalMovingPlatform) and\
                (self.last_monster is not None and
-                self.last_monster.pos[1] <= platform.rect.bottom):
+                    self.last_monster.pos[1] <= platform.rect.bottom):
                 continue
 
             collision = \
                 pygame.sprite.spritecollideany(platform,
                                                self.monsters,
                                                collided=pygame.sprite.collide_mask)
+
             if collision is None:
                 self.platforms.add(platform)
                 self.last_platform = platform
 
         self.platforms.update(fps)
+
+    def spawn_monster(self):
+        if not self.generate:
+            return
+
+        monster = self.monster_generator.generate(self.last_platform)
+        self.monsters.add(monster)
+        self.last_monster = monster
 
     def update_monsters(self, scroll_value, fps):
         for monster in self.monsters:
@@ -86,17 +102,6 @@ class EntitiesHandler:
                 monster.kill()
                 if self.last_monster == monster:
                     self.last_monster = None
-
-        """
-        for monster in self.monsters:
-            monster.kill()
-        self.last_monster = None
-        """
-
-        if len(self.monsters) == 0 and self.last_platform is not None:
-            monster = self.monster_generator.generate(self.last_platform)
-            self.monsters.add(monster)
-            self.last_monster = monster
 
         self.monsters.update(fps)
 
@@ -107,3 +112,16 @@ class EntitiesHandler:
     def draw(self, surface):
         self.platforms.draw(surface)
         self.monsters.draw(surface)
+
+    def reset(self, reset_platforms=True):
+        if reset_platforms:
+            self.platforms.empty()
+        self.platform_generator.reset()
+
+        self.monsters.empty()
+        self.monster_generator.reset()
+
+        self.last_platform = None
+        self.last_monster = None
+
+        self.difficult = 0
