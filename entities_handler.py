@@ -13,6 +13,7 @@ class EntitiesHandler:
 
         self.platforms = pygame.sprite.Group()
         self.monsters = pygame.sprite.Group()
+        self.extras = pygame.sprite.Group()
 
         self.last_platform = None
         self.last_monster = None
@@ -112,13 +113,23 @@ class EntitiesHandler:
 
         self.monsters.update(fps)
 
+    def update_extras(self, scroll_value, fps):
+        for extra in self.extras:
+            extra.rect.move_ip((0, scroll_value))
+            if extra.pos[1] > 2 * WORLD_BOUNDINGS[3]:
+                extra.kill()
+
+        self.extras.update(fps)
+
     def update(self, scroll_value, fps):
         self.update_platforms(scroll_value, fps)
         self.update_monsters(scroll_value, fps)
+        self.update_extras(scroll_value, fps)
 
     def draw(self, surface):
         self.platforms.draw(surface)
         self.monsters.draw(surface)
+        self.extras.draw(surface)
 
     def reset(self, reset_platforms=True):
         if reset_platforms:
@@ -127,6 +138,8 @@ class EntitiesHandler:
 
         self.monsters.empty()
         self.monster_generator.reset()
+
+        self.extras.empty()
 
         self.last_platform = None
         self.last_monster = None

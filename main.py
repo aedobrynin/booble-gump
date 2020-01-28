@@ -1,5 +1,6 @@
 import os
 import pygame
+from sprite import Sprite
 from player import Player, Direction
 from platforms import StaticPlatform, VanishPlatform
 from entities_handler import EntitiesHandler
@@ -7,8 +8,38 @@ from score_bar import ScoreBar
 from config import *
 
 
-def run_start_menu(player, entities_handler):
+def get_high_score():
+    high_score = 0
+    if os.path.exists(HIGH_SCORE_PATH):
+        with open(HIGH_SCORE_PATH, "r") as file:
+            try:
+                high_score = int(file.readline().strip())
+            except ValueError:
+                print(f"Warning! Bad data at {HIGH_SCORE_PATH}")
+    return high_score
+
+def update_high_score(score):
+    if score > get_high_score():
+        with open(HIGH_SCORE_PATH, "w") as file:
+            file.write(str(score))
+
+def render_text(value_name, value, color):
+    font = pygame.font.Font(MAIN_FONT_PATH, 32)
+    text = font.render(f"{value_name}: {value}",
+                       1,
+                       pygame.Color(color))
+    return text
+
+def run_start_menu(screen, player, entities_handler):
     player.pos = (150, MENU_PLATFORM_HEIGHT - PLAYER_HEIGHT - 5)
+
+    entities_handler.extras.add(Sprite((30, MENU_PLATFORM_HEIGHT - 70),
+                                       INVITATION))
+
+    high_score_text = render_text("High score", get_high_score(), HIGH_SCORE_COLOR)
+    pos_x = WINDOW_WIDTH // 2 - high_score_text.get_width() // 2
+    entities_handler.extras.add(Sprite((pos_x, MENU_PLATFORM_HEIGHT - 200),
+                                       high_score_text))
 
     pos_x = -11
     pos_y = MENU_PLATFORM_HEIGHT
@@ -59,8 +90,21 @@ def run_game_lost_menu(screen, player, entities_handler, score, score_bar):
 
     entities_handler.reset(reset_platforms=False)
 
+    entities_handler.extras.add(Sprite((30, 2 * WORLD_BOUNDINGS[3] - 70),
+                                       INVITATION))
+
+    last_game_score_text = render_text("Last game score", score, LAST_SCORE_COLOR)
+    pos_x = WINDOW_WIDTH // 2 - last_game_score_text.get_width() // 2
+    entities_handler.extras.add(Sprite((pos_x, 2 * WORLD_BOUNDINGS[3] - 250),
+                                      last_game_score_text))
+
+    high_score_text = render_text("High score", get_high_score(), HIGH_SCORE_COLOR)
+    pos_x = WINDOW_WIDTH // 2 - high_score_text.get_width() // 2
+    entities_handler.extras.add(Sprite((pos_x, 2 * WORLD_BOUNDINGS[3] - 200),
+                                       high_score_text))
+
     pos_x = -11
-    pos_y = WORLD_BOUNDINGS[3]
+    pos_y = 2 * WORLD_BOUNDINGS[3]
 
     pg = entities_handler.platform_generator
 
@@ -96,9 +140,6 @@ def run_game_lost_menu(screen, player, entities_handler, score, score_bar):
                 P_FALL_SPEED / FPS)
         entities_handler.update(scroll_value, FPS)
 
-        if player.rect.bottom - scroll_value < MENU_PLATFORM_HEIGHT - 10:
-            player.rect.move_ip((0, -scroll_value))
-        player.update_image()
         clock.tick(FPS)
 
     dummy = StaticPlatform((230, WORLD_BOUNDINGS[0] - 100),
@@ -128,6 +169,7 @@ def draw(screen, player, entities_handler, score_bar):
 
 def update(screen, player, entities_handler, score, score_bar):
     if player.dead is True:
+        update_high_score(score)
         score = run_game_lost_menu(screen,
                                    player,
                                    entities_handler,
@@ -169,7 +211,7 @@ def main():
 
     score_bar = ScoreBar(320, 46, 0, SCORE_BAR)
 
-    score = run_start_menu(player, entities_handler)
+    score = run_start_menu(screen, player, entities_handler)
     clock = pygame.time.Clock()
     running = True
 

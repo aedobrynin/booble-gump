@@ -1,6 +1,6 @@
 import os
 import pygame
-from config import MAIN_FONT
+from config import MAIN_FONT_PATH, SCORE_COLOR
 
 
 class ScoreBar(pygame.Surface):
@@ -12,7 +12,7 @@ class ScoreBar(pygame.Surface):
 
         super().__init__((width, height), pygame.SRCALPHA, 32)
 
-        self.font = pygame.font.Font(MAIN_FONT, 24)
+        self.font = pygame.font.Font(MAIN_FONT_PATH, 24)
         self.font.set_bold(True)
         self.score = score
 
@@ -28,7 +28,7 @@ class ScoreBar(pygame.Surface):
         if self.background is not None:
             self.blit(self.background, (0, 0))
 
-        score_text = self.font.render(str(self.score),
+        score_text = self.font.render(f"Score: {self.score}",
                                       1,
-                                      pygame.Color("#2B2517"))
+                                      pygame.Color(SCORE_COLOR))
         self.blit(score_text, (10, 0))

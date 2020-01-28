@@ -3,8 +3,11 @@ import pygame
 from enum import Enum
 
 
-PACK_NAME = "blue"
 DATA_DIR = "./data"
+
+HIGH_SCORE_PATH = os.path.join(DATA_DIR, "high_score.txt")
+
+PACK_NAME = "blue"
 PACK_DIR = os.path.join(DATA_DIR, PACK_NAME)
 
 PLAYER_DIR = os.path.join(PACK_DIR, "player")
@@ -29,9 +32,11 @@ M_INITIAL_WEIGHTS = list(1 for _ in range(9))
 
 BACKGROUND = pygame.image.load(os.path.join(PACK_DIR, "background.png"))
 SCORE_BAR = pygame.image.load(os.path.join(PACK_DIR, "score_bar.png"))
+INVITATION = pygame.image.load(os.path.join(PACK_DIR, "invitation.png"))
 
-MAIN_FONT = os.path.join(PACK_DIR, "IndieFlower-Regular.ttf")
-
+MAIN_FONT_PATH = os.path.join(PACK_DIR, "IndieFlower-Regular.ttf")
+SCORE_COLOR = "#2E4600"
+HIGH_SCORE_COLOR = LAST_SCORE_COLOR = "#000000"
 FPS = 60
 
 LEFT_KEY = pygame.K_LEFT
