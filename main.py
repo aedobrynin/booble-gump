@@ -18,10 +18,12 @@ def get_high_score():
                 print(f"Warning! Bad data at {HIGH_SCORE_PATH}")
     return high_score
 
+
 def update_high_score(score):
     if score > get_high_score():
         with open(HIGH_SCORE_PATH, "w") as file:
             file.write(str(score))
+
 
 def render_text(value_name, value, color):
     font = pygame.font.Font(MAIN_FONT_PATH, 32)
@@ -30,13 +32,16 @@ def render_text(value_name, value, color):
                        pygame.Color(color))
     return text
 
+
 def run_start_menu(screen, player, entities_handler):
     player.pos = (150, MENU_PLATFORM_HEIGHT - PLAYER_HEIGHT - 5)
 
     entities_handler.extras.add(Sprite((30, MENU_PLATFORM_HEIGHT - 70),
                                        INVITATION))
 
-    high_score_text = render_text("High score", get_high_score(), HIGH_SCORE_COLOR)
+    high_score_text = render_text("High score",
+                                  get_high_score(),
+                                  HIGH_SCORE_COLOR)
     pos_x = WINDOW_WIDTH // 2 - high_score_text.get_width() // 2
     entities_handler.extras.add(Sprite((pos_x, MENU_PLATFORM_HEIGHT - 200),
                                        high_score_text))
@@ -93,12 +98,16 @@ def run_game_lost_menu(screen, player, entities_handler, score, score_bar):
     entities_handler.extras.add(Sprite((30, 2 * WORLD_BOUNDINGS[3] - 70),
                                        INVITATION))
 
-    last_game_score_text = render_text("Last game score", score, LAST_SCORE_COLOR)
+    last_game_score_text = render_text("Last game score",
+                                       score,
+                                       LAST_SCORE_COLOR)
     pos_x = WINDOW_WIDTH // 2 - last_game_score_text.get_width() // 2
     entities_handler.extras.add(Sprite((pos_x, 2 * WORLD_BOUNDINGS[3] - 250),
-                                      last_game_score_text))
+                                       last_game_score_text))
 
-    high_score_text = render_text("High score", get_high_score(), HIGH_SCORE_COLOR)
+    high_score_text = render_text("High score",
+                                  get_high_score(),
+                                  HIGH_SCORE_COLOR)
     pos_x = WINDOW_WIDTH // 2 - high_score_text.get_width() // 2
     entities_handler.extras.add(Sprite((pos_x, 2 * WORLD_BOUNDINGS[3] - 200),
                                        high_score_text))
