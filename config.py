@@ -21,14 +21,14 @@ FALL_DOWN_SOUND_NAME = "whistle"
 PLATFORMS_DIR = os.path.join(PACK_DIR, "platforms")
 P_SOUNDS_DIR = os.path.join(PLATFORMS_DIR, "sounds")
 P_IMAGES_DIR = os.path.join(PLATFORMS_DIR, "images")
-P_INITIAL_WEIGHTS = [80, 20, 0, 0]
+P_INITIAL_WEIGHTS = (80, 20, 0, 0)
 P_ALIVE_COEFFICIENT = 2
 P_FALL_SPEED = -1000
 
 MONSTERS_DIR = os.path.join(PACK_DIR, "monsters")
 M_SOUNDS_DIR = os.path.join(MONSTERS_DIR, "sounds")
 M_IMAGES_DIR = os.path.join(MONSTERS_DIR, "images")
-M_INITIAL_WEIGHTS = list(1 for _ in range(9))
+M_INITIAL_WEIGHTS = tuple(1 for _ in range(9))
 
 BACKGROUND = pygame.image.load(os.path.join(PACK_DIR, "background.png"))
 SCORE_BAR = pygame.image.load(os.path.join(PACK_DIR, "score_bar.png"))

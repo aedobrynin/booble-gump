@@ -3,6 +3,7 @@ import pygame
 import random
 from sprite import MaskedSprite
 from config import *
+from copy import copy
 
 
 class BasePlatform(MaskedSprite):
@@ -77,7 +78,8 @@ PLATFORM_TYPES = ((StaticPlatform, "static", "pop"),
 
 class WeightBasedPlatformGenerator:
     def __init__(self, images_dir, sounds_dir, weights):
-        self.weights = weights
+        self.start_weights = weights
+        self.weights = list(copy(self.start_weights))
 
         self.load_images(images_dir)
         self.load_masks()
@@ -117,7 +119,7 @@ class WeightBasedPlatformGenerator:
                 self.weights[i + 1] += taken
 
     def reset(self):
-        self.weights = P_INITIAL_WEIGHTS
+        self.weights = list(copy(self.start_weights))
 
     def generate(self, platform_pos):
         platform_class, platform_image_name, platform_sound_name = \

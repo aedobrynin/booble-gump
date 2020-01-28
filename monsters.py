@@ -3,6 +3,7 @@ import random
 import pygame
 from sprite import MaskedSprite
 from config import *
+from copy import copy
 
 
 class BaseMonster(MaskedSprite):
@@ -64,7 +65,8 @@ MONSTER_TYPES = ((BaseMonster, "long", "fall_down", "shoot_down"),
 
 class WeightBasedMonsterGenerator:
     def __init__(self, images_dir, sounds_dir, weights):
-        self.weights = weights
+        self.start_weights = weights
+        self.weights = list(copy(self.start_weights))
 
         self.load_images(images_dir)
         self.load_masks()
@@ -93,7 +95,7 @@ class WeightBasedMonsterGenerator:
             self.sounds[sound_name] = sound
 
     def reset(self):
-        pass
+        self.weights = list(copy(self.start_weights))
 
     def generate(self, platform):
         m_class, m_name, m_fall_down_sound_name, m_shoot_down_sound_name = \

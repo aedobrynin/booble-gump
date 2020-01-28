@@ -224,6 +224,9 @@ def main():
     clock = pygame.time.Clock()
     running = True
 
+    for i in range(MAX_DIFFICULT + 1):
+        entities_handler.make_harder()
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
