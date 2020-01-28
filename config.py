@@ -8,9 +8,12 @@ DATA_DIR = "./data"
 PACK_DIR = os.path.join(DATA_DIR, PACK_NAME)
 
 PLAYER_DIR = os.path.join(PACK_DIR, "player")
-PLAYER_SHOOT_SOUND_PATH = os.path.join(PLAYER_DIR, "sounds", "blaster.wav")
-PLAYER_DEATH_SOUND_PATH = os.path.join(PLAYER_DIR, "sounds", "crash.wav")
+
 PLAYER_IMAGES_DIR = os.path.join(PLAYER_DIR, "images")
+PLAYER_SOUNDS_DIR = os.path.join(PLAYER_DIR, "sounds")
+SHOOT_SOUND_NAME = "blaster"
+DEATH_SOUND_NAME = "crash"
+FALL_DOWN_SOUND_NAME = "whistle"
 
 PLATFORMS_DIR = os.path.join(PACK_DIR, "platforms")
 P_SOUNDS_DIR = os.path.join(PLATFORMS_DIR, "sounds")
@@ -25,6 +28,9 @@ M_IMAGES_DIR = os.path.join(MONSTERS_DIR, "images")
 M_INITIAL_WEIGHTS = list(1 for _ in range(9))
 
 BACKGROUND = pygame.image.load(os.path.join(PACK_DIR, "background.png"))
+SCORE_BAR = pygame.image.load(os.path.join(PACK_DIR, "score_bar.png"))
+
+MAIN_FONT = os.path.join(PACK_DIR, "IndieFlower-Regular.ttf")
 
 FPS = 60
 
@@ -62,6 +68,7 @@ MONSTER_FALL_SPEED = 500
 MONSTER_JUMP_FORCE = 800
 
 
+START_PLATFORM_JUMP_FORCE = 1800
 MENU_PLATFORM_HEIGHT = WORLD_BOUNDINGS[3] - 100
 
 

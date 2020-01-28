@@ -17,13 +17,16 @@ class EntitiesHandler:
         self.last_platform = None
         self.last_monster = None
 
-        self.platform_generator = WeightBasedPlatformGenerator(p_images_dir,
-                                                               p_sounds_dir,
-                                                               P_INITIAL_WEIGHTS)
+        self.platform_generator = \
+            WeightBasedPlatformGenerator(p_images_dir,
+                                         p_sounds_dir,
+                                         P_INITIAL_WEIGHTS)
 
-        self.monster_generator = WeightBasedMonsterGenerator(m_images_dir,
-                                                             m_sounds_dir,
-                                                             M_INITIAL_WEIGHTS)
+        self.monster_generator = \
+            WeightBasedMonsterGenerator(m_images_dir,
+                                        m_sounds_dir,
+                                        M_INITIAL_WEIGHTS)
+
         self.difficult = 0
 
     def make_harder(self):
@@ -31,17 +34,21 @@ class EntitiesHandler:
         self.spawn_monster()
         self.difficult = min(self.difficult + 1, MAX_DIFFICULT)
 
-    def __calc_next_pos(self):
-        pos_x = randrange(WORLD_BOUNDINGS[0],
-                          WORLD_BOUNDINGS[2] - PLATFORM_WIDTH)
-
+    def __func(self, difficult):
         if self.last_platform is None:
             last_platform_height = WORLD_BOUNDINGS[3]
         else:
             last_platform_height = self.last_platform.pos[1]
 
-        min_h = int(last_platform_height - PLATFORM_HEIGHT - MAX_PLAYER_JUMP_HEIGHT * min(self.difficult + 10, MAX_DIFFICULT) / MAX_DIFFICULT)
-        max_h = int(last_platform_height - PLATFORM_HEIGHT - MAX_PLAYER_JUMP_HEIGHT * self.difficult / min(self.difficult + 10, MAX_DIFFICULT) / MAX_DIFFICULT)
+        return int(last_platform_height - PLATFORM_HEIGHT -
+                   MAX_PLAYER_JUMP_HEIGHT * difficult / MAX_DIFFICULT)
+
+    def __calc_next_pos(self):
+        pos_x = randrange(WORLD_BOUNDINGS[0],
+                          WORLD_BOUNDINGS[2] - PLATFORM_WIDTH)
+
+        min_h = self.__func(min(self.difficult + 10, MAX_DIFFICULT))
+        max_h = self.__func(self.difficult)
 
         if self.last_monster is not None and\
            isinstance(self.last_monster.platform, HorizontalMovingPlatform):

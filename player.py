@@ -7,8 +7,9 @@ from config import *
 
 
 class Player(MaskedSprite):
-    def __init__(self, pos, images_dir, shoot_sound=None, death_sound=None):
+    def __init__(self, pos, images_dir, sounds_dir):
         self.load_images_and_masks(images_dir)
+        self.load_sounds(sounds_dir)
 
         self.vertical_speed = 0
 
@@ -25,11 +26,9 @@ class Player(MaskedSprite):
         self.bounce_step = -1
 
         self.shoot_step = -1
-        self.shoot_sound = shoot_sound
         self.shells = pygame.sprite.Group()
 
         self.dead = False
-        self.death_sound = death_sound
 
         super().__init__(pos,
                          self.images[self.image_code],
@@ -45,6 +44,13 @@ class Player(MaskedSprite):
             self.images[state_name] = image
             self.masks[state_name] = mask
 
+    def load_sounds(self, sounds_dir):
+        self.sounds = dict()
+        for file in os.listdir(sounds_dir):
+            sound_name = file.rsplit(".")[0]
+            sound = pygame.mixer.Sound(os.path.join(sounds_dir, file))
+            self.sounds[sound_name] = sound
+
     @property
     def horizontal_direction(self):
         return self._horizontal_direction
@@ -53,7 +59,7 @@ class Player(MaskedSprite):
     def horizontal_direction(self, value):
         self._horizontal_direction = value
 
-    def __update_image(self):
+    def update_image(self):
         if self.horizontal_direction == Direction.LEFT:
             self.image_code = "left"
 
@@ -102,11 +108,9 @@ class Player(MaskedSprite):
             shell.rect.move_ip(shift)
 
         self.shells.add(shell)
+        self.sounds[SHOOT_SOUND_NAME].play()
 
-        if self.shoot_sound is not None:
-            self.shoot_sound.play()
-
-    def __update_horizontal_speed(self):
+    def update_horizontal_speed(self):
         if self.horizontal_direction == Direction.STALL:
             self.horizontal_speed = 0
         elif self.horizontal_direction == Direction.LEFT:
@@ -114,7 +118,7 @@ class Player(MaskedSprite):
         elif self.horizontal_direction == Direction.RIGHT:
             self.horizontal_speed = self.horizontal_force / self.weight
 
-    def __update_vertical_speed(self, fps):
+    def update_vertical_speed(self, fps):
         acceleration = self.gravitation
         self.vertical_speed += acceleration / fps
 
@@ -174,23 +178,15 @@ class Player(MaskedSprite):
 
     def die(self):
         self.dead = True
-
-        if self.death_sound is not None:
-            self.death_sound.play()
+        self.shells.empty()
+        self.sounds[DEATH_SOUND_NAME].play()
+        self.sounds[FALL_DOWN_SOUND_NAME].play()
 
     def update(self, platforms, monsters, fps):
-        if self.dead:
-            self.__update_image()
-            self.__update_vertical_speed(fps)
-            self.rect.move_ip((self.horizontal_speed / fps,
-                               self.vertical_speed / fps))
-            self.shells.update(fps)
-            return
+        self.update_image()
 
-        self.__update_image()
-
-        self.__update_vertical_speed(fps)
-        self.__update_horizontal_speed()
+        self.update_vertical_speed(fps)
+        self.update_horizontal_speed()
 
         self.__check_boundings()
 
@@ -198,6 +194,7 @@ class Player(MaskedSprite):
                            self.vertical_speed / fps))
 
         self.check_collisions_with_monsters(monsters)
+
         if self.dead is False:
             self.shells.update(fps)
             self.check_shells_collisions(monsters)
@@ -209,6 +206,8 @@ class Player(MaskedSprite):
 
         if self.rect.bottom > WORLD_BOUNDINGS[3]:
             self.dead = True
+            self.sounds[FALL_DOWN_SOUND_NAME].play()
+            self.shells.empty()
 
         if self.rect.top > WORLD_BOUNDINGS[3]:
             self.kill()
@@ -216,4 +215,3 @@ class Player(MaskedSprite):
     def draw(self, surface):
         super().draw(surface)
         self.shells.draw(surface)
-
