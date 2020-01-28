@@ -1,54 +1,55 @@
 import os
 from enum import Enum
 import pygame
-from sprite import Sprite
-
+from sprite import MaskedSprite
+from shells import BaseShell
 from config import *
 
 
+class Player(MaskedSprite):
+    def __init__(self, pos, images_dir, sounds_dir):
+        self.load_images_and_masks(images_dir)
+        self.load_sounds(sounds_dir)
 
-class Player(Sprite):
-    def __init__(self, pos, images_dir, world_boundings):
-        self.load_images(images_dir)
         self.vertical_speed = 0
 
         self.horizontal_speed = 0
-
         self.horizontal_force = PLAYER_HORIZONTAL_FORCE
         self.horizontal_direction = Direction.STALL
 
         self.weight = PLAYER_WEIGHT
 
         self.gravitation = GRAVITATION
-
         self.acceleration = 0
         self.image_code = "right"
 
         self.bounce_step = -1
 
-        self.world_boundings = world_boundings
+        self.shoot_step = -1
+        self.shells = pygame.sprite.Group()
 
-        super().__init__(pos, self.images[self.image_code])
+        self.dead = False
 
-        self.left_mask = pygame.mask.Mask(self.rect.size)
-        for i in range(14, 45):
-            for j in range(30, self.rect.height):
-                self.left_mask.set_at((i, j))
+        super().__init__(pos,
+                         self.images[self.image_code],
+                         self.masks[self.image_code])
 
-        self.right_mask = pygame.mask.Mask(self.rect.size)
-        for i in range(31):
-
-            for j in range(34, self.rect.height):
-                self.right_mask.set_at((i, j))
-
-        self.mask = self.right_mask
-
-    def load_images(self, images_dir):
+    def load_images_and_masks(self, images_dir):
         self.images = dict()
+        self.masks = dict()
         for filename in os.listdir(images_dir):
             state_name = filename.rsplit('.')[0]
-            self.images[state_name] = \
-                pygame.image.load(os.path.join(images_dir, filename))
+            image = pygame.image.load(os.path.join(images_dir, filename))
+            mask = pygame.mask.from_surface(image)
+            self.images[state_name] = image
+            self.masks[state_name] = mask
+
+    def load_sounds(self, sounds_dir):
+        self.sounds = dict()
+        for file in os.listdir(sounds_dir):
+            sound_name = file.rsplit(".")[0]
+            sound = pygame.mixer.Sound(os.path.join(sounds_dir, file))
+            self.sounds[sound_name] = sound
 
     @property
     def horizontal_direction(self):
@@ -58,27 +59,58 @@ class Player(Sprite):
     def horizontal_direction(self, value):
         self._horizontal_direction = value
 
-    def __update_image(self):
+    def update_image(self):
         if self.horizontal_direction == Direction.LEFT:
             self.image_code = "left"
-            self.mask = self.left_mask
+
         elif self.horizontal_direction == Direction.RIGHT:
             self.image_code = "right"
-            self.mask = self.right_mask
 
         if self.bounce_step == PLAYER_BOUNCE_ANIMATION_STEPS:
             self.bounce_step = -1
 
+        if self.shoot_step == PLAYER_SHOOT_ANIMATION_STEPS:
+            self.shoot_step = -1
+
+        cur_image_code = self.image_code
+        if self.shoot_step != -1:
+            cur_image_code += "-shoot"
+            self.shoot_step += 1
+
         if self.bounce_step != -1:
-            self.image = self.images[self.image_code + "-bounce"]
+            cur_image_code += "-bounce"
             self.bounce_step += 1
-        else:
-            self.image = self.images[self.image_code]
+
+        self.image = self.images[cur_image_code]
+        self.mask = self.masks[cur_image_code]
 
     def bounce(self):
         self.bounce_step = 0
 
-    def __update_horizontal_speed(self):
+    def shoot(self):
+        if self.shoot_step != -1:
+            return
+
+        self.shoot_step = 0
+
+        shell_image = self.images["shell"]
+        shell_mask = self.masks["shell"]
+        shell = BaseShell((0, 0), shell_image, shell_mask)
+
+        shell.pos = self.pos
+        if self.image_code == "left":
+            shift = list(LEFT_NOSE_POS)
+            shift[0] -= shell.rect.width // 2
+            shell.rect.move_ip(shift)
+        else:
+            shift = list(RIGHT_NOSE_POS)
+            shift[0] -= shell.rect.width // 2
+            shell.rect.move_ip(shift)
+
+        self.shells.add(shell)
+        self.sounds[SHOOT_SOUND_NAME].play()
+
+    def update_horizontal_speed(self):
         if self.horizontal_direction == Direction.STALL:
             self.horizontal_speed = 0
         elif self.horizontal_direction == Direction.LEFT:
@@ -86,19 +118,35 @@ class Player(Sprite):
         elif self.horizontal_direction == Direction.RIGHT:
             self.horizontal_speed = self.horizontal_force / self.weight
 
-    def __update_vertical_speed(self, fps):
+    def update_vertical_speed(self, fps):
         acceleration = self.gravitation
         self.vertical_speed += acceleration / fps
 
     def __check_boundings(self):
-        if self.rect.left + self.rect.width // 2 < self.world_boundings[0]:
-            self.rect.right = self.world_boundings[2] + self.rect.width // 2
+        if self.rect.left + self.rect.width // 2 < WORLD_BOUNDINGS[0]:
+            self.rect.right = WORLD_BOUNDINGS[2] + self.rect.width // 2
 
-        if self.rect.left + self.rect.width // 2 > self.world_boundings[2]:
-            self.rect.left = self.world_boundings[0] - self.rect.width // 20
+        if self.rect.left + self.rect.width // 2 > WORLD_BOUNDINGS[2]:
+            self.rect.left = WORLD_BOUNDINGS[0] - self.rect.width // 20
 
     def check_collisions_with_monsters(self, monsters):
-        pass
+        collision = \
+            pygame.sprite.spritecollideany(self,
+                                           monsters,
+                                           collided=pygame.sprite.collide_mask)
+
+        if collision is None or collision.dead:
+            return
+
+        collision_point = pygame.sprite.collide_mask(self, collision)
+
+        if collision_point[1] >= self.image.get_height() - PLAYER_LEGS_LENGTH:
+            self.vertical_speed = -collision.jump_force / self.weight
+            self.rect.bottom = collision.rect.top
+            collision.fall_down()
+            return
+
+        self.die()
 
     def check_collisions_with_platforms(self, platforms):
         collision = \
@@ -109,16 +157,36 @@ class Player(Sprite):
         if collision is None:
             return
 
+        collision_point = pygame.sprite.collide_mask(self, collision)
+
+        if collision_point[1] < self.image.get_height() - PLAYER_LEGS_LENGTH:
+            return
+
         self.vertical_speed = -collision.jump_force / self.weight
-        self.rect.bottom = collision.top
+        self.rect.bottom = collision.rect.top
         self.bounce()
         collision.collision_react()
 
-    def update(self, platforms, monsters, fps):
-        self.__update_image()
+    def check_shells_collisions(self, monsters):
+        killed_monsters = \
+            pygame.sprite.groupcollide(self.shells,
+                                       monsters, True, False,
+                                       collided=pygame.sprite.collide_mask)
 
-        self.__update_vertical_speed(fps)
-        self.__update_horizontal_speed()
+        for monster in killed_monsters.values():
+            monster[0].shoot_down()
+
+    def die(self):
+        self.dead = True
+        self.shells.empty()
+        self.sounds[DEATH_SOUND_NAME].play()
+        self.sounds[FALL_DOWN_SOUND_NAME].play()
+
+    def update(self, platforms, monsters, fps):
+        self.update_image()
+
+        self.update_vertical_speed(fps)
+        self.update_horizontal_speed()
 
         self.__check_boundings()
 
@@ -127,7 +195,23 @@ class Player(Sprite):
 
         self.check_collisions_with_monsters(monsters)
 
-        if self.vertical_speed <= 0:
-            return
+        if self.dead is False:
+            self.shells.update(fps)
+            self.check_shells_collisions(monsters)
 
-        self.check_collisions_with_platforms(platforms)
+            if self.vertical_speed <= 0:
+                return
+
+            self.check_collisions_with_platforms(platforms)
+
+        if self.rect.bottom > WORLD_BOUNDINGS[3]:
+            self.dead = True
+            self.sounds[FALL_DOWN_SOUND_NAME].play()
+            self.shells.empty()
+
+        if self.rect.top > WORLD_BOUNDINGS[3]:
+            self.kill()
+
+    def draw(self, surface):
+        super().draw(surface)
+        self.shells.draw(surface)

@@ -1,4 +1,0 @@
-1) Add precalculated masks for all images in order to do not calculate them for new objects.
-2) Add monsters (Simple generation)
-3) Let the player shoot
-4) Add smart monsters generation
