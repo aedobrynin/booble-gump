@@ -1,6 +1,6 @@
+from enum import Enum
 import os
 import pygame
-from enum import Enum
 
 
 DATA_DIR = "./data"

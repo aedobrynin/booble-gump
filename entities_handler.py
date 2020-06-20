@@ -1,9 +1,11 @@
-import pygame
 from random import randrange
+import pygame
 from platforms import WeightBasedPlatformGenerator
 from platforms import HorizontalMovingPlatform
 from monsters import WeightBasedMonsterGenerator
-from config import *
+from config import P_INITIAL_WEIGHTS, M_INITIAL_WEIGHTS, MAX_DIFFICULT
+from config import WORLD_BOUNDINGS, PLATFORM_WIDTH, PLATFORM_HEIGHT
+from config import P_ALIVE_COEFFICIENT, MAX_PLAYER_JUMP_HEIGHT
 
 
 class EntitiesHandler:

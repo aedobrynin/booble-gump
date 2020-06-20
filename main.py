@@ -1,11 +1,18 @@
 import os
 import pygame
 from sprite import Sprite
-from player import Player, Direction
+from player import Player
 from platforms import StaticPlatform, VanishPlatform
 from entities_handler import EntitiesHandler
 from score_bar import ScoreBar
-from config import *
+from config import HIGH_SCORE_PATH, MAIN_FONT_PATH, MENU_PLATFORM_HEIGHT
+from config import PLAYER_HEIGHT, INVITATION, START_PLATFORM_JUMP_FORCE
+from config import WORLD_BOUNDINGS, P_FALL_SPEED, FPS, LAST_SCORE_COLOR
+from config import BACKGROUND, LEVEL_LINE, WINDOW_SIZE, P_IMAGES_DIR
+from config import P_SOUNDS_DIR, M_IMAGES_DIR, M_SOUNDS_DIR, PLAYER_IMAGES_DIR
+from config import PLAYER_SOUNDS_DIR, SCORE_BAR, LEFT_KEY, SHOOT_KEYS
+from config import RIGHT_KEY, Direction, PLATFORM_WIDTH, PLATFORM_HEIGHT
+from config import HIGH_SCORE_COLOR, WINDOW_WIDTH
 
 
 def get_high_score():
@@ -33,7 +40,7 @@ def render_text(value_name, value, color):
     return text
 
 
-def run_start_menu(screen, player, entities_handler):
+def run_start_menu(player, entities_handler):
     player.pos = (150, MENU_PLATFORM_HEIGHT - PLAYER_HEIGHT - 5)
 
     entities_handler.extras.add(Sprite((30, MENU_PLATFORM_HEIGHT - 70),
@@ -85,7 +92,7 @@ def run_game_lost_menu(screen, player, entities_handler, score, score_bar):
     clock = pygame.time.Clock()
     while entities_handler.platforms:
         draw(screen, player, entities_handler, score_bar)
-        scroll_value = P_FALL_SPEED / FPS
+        scroll_value = P_FALL_SPEED // FPS
         if player.pos[1] + scroll_value >= MENU_PLATFORM_HEIGHT - 100:
             player.rect.move_ip((0, scroll_value))
         player.update_image()
@@ -208,6 +215,7 @@ def main():
     pygame.init()
 
     screen = pygame.display.set_mode(WINDOW_SIZE)
+    pygame.display.set_caption("Booble Gump")
 
     entities_handler = EntitiesHandler(P_IMAGES_DIR,
                                        P_SOUNDS_DIR,
@@ -220,7 +228,7 @@ def main():
 
     score_bar = ScoreBar(320, 46, 0, SCORE_BAR)
 
-    score = run_start_menu(screen, player, entities_handler)
+    score = run_start_menu(player, entities_handler)
     clock = pygame.time.Clock()
     running = True
 

@@ -1,9 +1,12 @@
 import os
-from enum import Enum
 import pygame
 from sprite import MaskedSprite
 from shells import BaseShell
-from config import *
+from config import PLAYER_HORIZONTAL_FORCE, Direction, PLAYER_WEIGHT
+from config import GRAVITATION, PLAYER_BOUNCE_ANIMATION_STEPS
+from config import PLAYER_SHOOT_ANIMATION_STEPS, LEFT_NOSE_POS
+from config import RIGHT_NOSE_POS, SHOOT_SOUND_NAME, WORLD_BOUNDINGS
+from config import PLAYER_LEGS_LENGTH, DEATH_SOUND_NAME, FALL_DOWN_SOUND_NAME
 
 
 class Player(MaskedSprite):

@@ -1,4 +1,3 @@
-import os
 import pygame
 from config import MAIN_FONT_PATH, SCORE_COLOR
 

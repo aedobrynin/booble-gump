@@ -1,9 +1,9 @@
 import os
 import random
+from copy import copy
 import pygame
 from sprite import MaskedSprite
-from config import *
-from copy import copy
+from config import MONSTER_FALL_SPEED, MONSTER_JUMP_FORCE
 
 
 class BaseMonster(MaskedSprite):

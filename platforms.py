@@ -1,9 +1,10 @@
+import random
+from copy import copy
 import os
 import pygame
-import random
 from sprite import MaskedSprite
-from config import *
-from copy import copy
+from config import PLATFORMS_JUMP_FORCE, PLATFORM_MOVE_SPEED, WORLD_BOUNDINGS
+from config import Direction
 
 
 class BasePlatform(MaskedSprite):
@@ -27,8 +28,7 @@ class BasePlatform(MaskedSprite):
 
 
 class StaticPlatform(BasePlatform):
-    def __init__(self, pos, image, mask=None, sound=None):
-        super().__init__(pos, image, mask, sound)
+    pass
 
 
 class HorizontalMovingPlatform(BasePlatform):
@@ -56,17 +56,13 @@ class HorizontalMovingPlatform(BasePlatform):
 
 
 class VanishPlatform(BasePlatform):
-    def __init__(self, pos, image, mask=None, sound=None):
-        super().__init__(pos, image, mask, sound)
-
     def collision_react(self):
         super().collision_react()
         self.kill()
 
 
 class HorizontalMovingVanishPlatform(HorizontalMovingPlatform, VanishPlatform):
-    def __init__(self, pos, image, mask=None, sound=None):
-        super().__init__(pos, image, mask, sound)
+    pass
 
 
 """(Class, image name, sound name)"""
