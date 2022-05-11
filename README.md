@@ -7,7 +7,7 @@ Booble Gump is a game written in Python with Pygame.
 * Sound
 * Best score
 * Monsters
-* Level hardness increases
+* The Level of difficulty increases
 
 ## How to build and run
 ```
